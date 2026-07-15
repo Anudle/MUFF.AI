@@ -1,1 +1,1 @@
-# muffAI
+# muff.AI
