@@ -64,3 +64,4 @@ scripts/smoke.ts       acceptance test: list your NFL leagues
 ## Testing without a live season
 
 Yahoo serves historical seasons — point queries at your 2025 league key to build and test the digest against real (embarrassing) league history before Week 1. Those become the golden dataset for ANU-16 evals.
+
