@@ -1,0 +1,17 @@
+{
+  "name": "muff-ai",
+  "version": "0.1.0",
+  "description": "MUFF.ai — Monarch United Fantasy Football agentic league companion",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "auth": "node --env-file=.env --experimental-strip-types scripts/yahoo-auth.ts",
+    "smoke": "node --env-file=.env --experimental-strip-types scripts/smoke.ts",
+    "bot": "node --env-file=.env --experimental-strip-types src/telegram/bot.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  }
+}
