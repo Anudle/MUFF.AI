@@ -39,6 +39,20 @@ async function getAccessToken(): Promise<string> {
   return tokens.access_token;
 }
 
+/** Thrown on non-2xx Yahoo responses; carries the HTTP status so callers
+ *  (the MCP error mapper in ANU-15) can translate to structured errors. */
+export class YahooApiError extends Error {
+  readonly status: number;
+  readonly path: string;
+
+  constructor(status: number, path: string, body: string) {
+    super(`Yahoo API ${status} for ${path}: ${body.slice(0, 500)}`);
+    this.name = "YahooApiError";
+    this.status = status;
+    this.path = path;
+  }
+}
+
 /** GET a Yahoo Fantasy resource path, returning parsed JSON. */
 export async function yahooFetch(path: string): Promise<unknown> {
   const token = await getAccessToken();
@@ -47,8 +61,7 @@ export async function yahooFetch(path: string): Promise<unknown> {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Yahoo API ${res.status} for ${path}: ${text.slice(0, 500)}`);
+    throw new YahooApiError(res.status, path, await res.text());
   }
   return res.json();
 }
