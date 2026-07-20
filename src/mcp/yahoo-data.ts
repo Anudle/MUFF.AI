@@ -64,6 +64,8 @@ export interface LeagueContext {
   is_finished: boolean;
   my_team_key: string;
   my_team_name: string;
+  /** Every team in the league (MUFF-38: digest needs league-wide rosters). */
+  teams: { team_key: string; name: string; manager: string | null }[];
 }
 
 let leagueCache: Promise<LeagueContext> | null = null;
@@ -119,6 +121,11 @@ export function resolveLeague(): Promise<LeagueContext> {
       is_finished: Number(meta.is_finished) === 1,
       my_team_key: mine.team_key as string,
       my_team_name: String(mine.name),
+      teams: teams.map((t) => ({
+        team_key: t.team_key as string,
+        name: String(t.name),
+        manager: managerName(t),
+      })),
     };
   })();
   return leagueCache;
@@ -148,32 +155,52 @@ function resolveWeek(league: LeagueContext, week?: number): number {
 // Shaped fetchers — one per MCP tool
 // ---------------------------------------------------------------------------
 
-export async function getRoster(week?: number) {
-  const league = await resolveLeague();
-  const w = resolveWeek(league, week);
+/** One team's week roster with per-player points. Used by getRoster (my team) and getLeagueRosters (all teams). */
+async function fetchTeamRoster(teamKey: string, week: number) {
   const data = (await yahooFetch(
-    `team/${league.my_team_key}/roster;week=${w}/players/stats;type=week;week=${w}`,
+    `team/${teamKey}/roster;week=${week}/players/stats;type=week;week=${week}`,
   )) as Json;
   const team = mergeFragments(data.fantasy_content.team);
   const roster = team.roster?.["0"] ?? team.roster ?? {};
-  const players = items(roster.players ?? team.roster?.["0"]?.players, "player").map(
-    (p) => ({
-      name: p.name?.full ?? null,
-      position: p.display_position ?? null,
-      slot: mergeFragments(p.selected_position).position ?? null,
-      nfl_team: p.editorial_team_abbr ?? null,
-      status: p.status_full ?? p.status ?? null,
-      bye_week: num(p.bye_weeks?.week),
-      points: num(p.player_points?.total),
-    }),
-  );
+  return items(roster.players ?? team.roster?.["0"]?.players, "player").map((p) => ({
+    name: p.name?.full ?? null,
+    position: p.display_position ?? null,
+    slot: mergeFragments(p.selected_position).position ?? null,
+    nfl_team: p.editorial_team_abbr ?? null,
+    status: p.status_full ?? p.status ?? null,
+    bye_week: num(p.bye_weeks?.week),
+    points: num(p.player_points?.total),
+  }));
+}
+
+export async function getRoster(week?: number) {
+  const league = await resolveLeague();
+  const w = resolveWeek(league, week);
   return {
     league: league.league_name,
     season: league.season,
     week: w,
     team: league.my_team_name,
-    players,
+    players: await fetchTeamRoster(league.my_team_key, w),
   };
+}
+
+/**
+ * Every team's roster for one week (MUFF-38 digest: bench points, start/sit).
+ * One Yahoo call per team, batched 4 at a time to stay clear of rate limits.
+ */
+export async function getLeagueRosters(week?: number) {
+  const league = await resolveLeague();
+  const w = resolveWeek(league, week);
+  const teams: { team: string; manager: string | null; players: Awaited<ReturnType<typeof fetchTeamRoster>> }[] = [];
+  for (let i = 0; i < league.teams.length; i += 4) {
+    const batch = league.teams.slice(i, i + 4);
+    const rosters = await Promise.all(batch.map((t) => fetchTeamRoster(t.team_key, w)));
+    batch.forEach((t, j) =>
+      teams.push({ team: t.name, manager: t.manager, players: rosters[j] }),
+    );
+  }
+  return { league: league.league_name, season: league.season, week: w, teams };
 }
 
 function shapeMatchup(matchup: Record<string, Json>) {
