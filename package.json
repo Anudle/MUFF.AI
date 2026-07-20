@@ -12,6 +12,7 @@
     "smoke": "node --env-file=.env --experimental-strip-types scripts/smoke.ts",
     "mcp": "node --env-file=.env --experimental-strip-types src/mcp/server.ts",
     "agent": "node --env-file=.env --experimental-strip-types scripts/agent-chat.ts",
+    "digest": "node --env-file=.env --experimental-strip-types scripts/digest.ts",
     "bot": "node --env-file=.env --experimental-strip-types src/telegram/bot.ts"
   },
   "devDependencies": {
@@ -20,6 +21,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.3.215",
+    "@anthropic-ai/sdk": "^0.112.3",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^4.4.3"
   }
