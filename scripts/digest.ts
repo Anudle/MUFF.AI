@@ -12,6 +12,7 @@
 
 import { gatherWeekFacts } from "../src/digest/facts.ts";
 import { generateDigest } from "../src/digest/generate.ts";
+import { savePowerRankings } from "../src/digest/history.ts";
 import { renderDigest } from "../src/digest/render.ts";
 
 const args = process.argv.slice(2);
@@ -30,6 +31,9 @@ console.error(
 console.error("Generating digest…");
 const digest = await generateDigest(facts);
 const text = renderDigest(facts, digest);
+// Persist this week's rankings so next week's digest can show movement.
+// (Re-running a week overwrites its entry — latest run is what "published" means.)
+savePowerRankings(facts.season, facts.week, digest.power_rankings);
 
 console.log(`\n${text}\n`);
 

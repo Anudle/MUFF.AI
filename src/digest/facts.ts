@@ -16,6 +16,7 @@ import {
   getWeekResults,
   resolveLeague,
 } from "../mcp/yahoo-data.ts";
+import { loadPowerRankings } from "./history.ts";
 
 // Slots that score points. Everything else (BN, IR) rides the pine.
 const isStarter = (slot: string | null) => slot !== null && slot !== "BN" && slot !== "IR";
@@ -70,6 +71,8 @@ export interface WeekFacts {
     streak: string | null;
   }[];
   recent_transactions: { type: string | null; date: string | null; summary: string }[];
+  /** The power rankings PUBLISHED in last week's digest (null in week 1 / cold start). */
+  previous_power_rankings: { rank: number; team: string }[] | null;
 }
 
 export async function gatherWeekFacts(week?: number): Promise<WeekFacts> {
@@ -186,6 +189,7 @@ export async function gatherWeekFacts(week?: number): Promise<WeekFacts> {
       points_for: s.points_for,
       streak: s.streak,
     })),
+    previous_power_rankings: loadPowerRankings(results.season, w - 1),
     recent_transactions: transactions.transactions.slice(0, 10).map((t) => ({
       type: t.type,
       date: t.date,

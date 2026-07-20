@@ -11,6 +11,21 @@ import type { WeekFacts } from "./facts.ts";
 
 const medals = ["🥇", "🥈", "🥉"];
 
+/** ▲2 / ▼1 / — / 🆕, computed from last week's PUBLISHED rankings — never by the model. */
+function movement(
+  team: string,
+  rank: number,
+  prev: WeekFacts["previous_power_rankings"],
+): string {
+  if (!prev) return "";
+  const was = prev.find((p) => p.team === team)?.rank;
+  if (was === undefined) return " 🆕";
+  const delta = was - rank;
+  if (delta > 0) return ` ▲${delta}`;
+  if (delta < 0) return ` ▼${-delta}`;
+  return " —";
+}
+
 export function renderDigest(facts: WeekFacts, d: Digest): string {
   const lines: string[] = [
     `🏈 *MUFF WEEKLY — Week ${facts.week}* 🏈`,
@@ -28,7 +43,10 @@ export function renderDigest(facts: WeekFacts, d: Digest): string {
     "*👑 Power rankings*",
     ...d.power_rankings
       .sort((a, b) => a.rank - b.rank)
-      .map((p) => `${medals[p.rank - 1] ?? `${p.rank}.`} *${p.team}* — ${p.comment}`),
+      .map(
+        (p) =>
+          `${medals[p.rank - 1] ?? `${p.rank}.`}${movement(p.team, p.rank, facts.previous_power_rankings)} *${p.team}* — ${p.comment}`,
+      ),
   ];
   if (d.waiver_watch.trim()) {
     lines.push("", "*🛒 Waiver watch*", d.waiver_watch.trim());

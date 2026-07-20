@@ -51,6 +51,7 @@ Rules:
 - Use team names as given; use manager first names when available for the personal touch.
 - Roast performances, not people. Confident, funny, quotable — the goal is screenshots.
 - Power rankings: all teams, ordered by your read of record + points-for + trajectory (streak). Ranking opinions are yours; the numbers you cite must be real.
+- If previous_power_rankings is present, treat it as what you published last week: rank with fresh eyes, but call out notable risers/fallers in comments using exact previous positions ("up from 7th"). Only mention a previous position if the rank actually changed. Movement arrows are added automatically — don't write arrow symbols yourself.
 - No preamble, no meta-commentary. Fill the schema.`;
 
 export async function generateDigest(facts: WeekFacts): Promise<Digest> {
