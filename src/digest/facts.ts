@@ -189,7 +189,7 @@ export async function gatherWeekFacts(week?: number): Promise<WeekFacts> {
       points_for: s.points_for,
       streak: s.streak,
     })),
-    previous_power_rankings: loadPowerRankings(results.season, w - 1),
+    previous_power_rankings: await loadPowerRankings(results.season, w - 1),
     recent_transactions: transactions.transactions.slice(0, 10).map((t) => ({
       type: t.type,
       date: t.date,

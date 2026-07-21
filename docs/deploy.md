@@ -92,6 +92,39 @@ containers are harmless (last write wins).
 - **Why no CDK/SAM**: four resources, one person, one environment — plain
   CLI keeps every call visible. Revisit when any of those become plural.
 
+## The scheduled digest (MUFF-43)
+
+```
+EventBridge Scheduler  muff-digest-tuesday
+  cron(0 7 ? * TUE *) America/Denver, 2026-09-15 → 2027-01-06
+      │  (assumes muff-digest-scheduler-role; max 2 retries)
+      ▼
+muff-digest            (nodejs22.x, 512 MB, 300 s timeout)
+  src/digest/lambda.ts — {} = last completed week + deliver; {"dry_run":true} for tests
+  src/digest/run.ts    — gather → generate → render → persist → send (shared with the CLI)
+      ├── Secrets Manager: muff/yahoo-tokens   (same secret as the MCP server)
+      ├── S3: muff-digest-history-<acct>/digest-history.json  (power-ranking history)
+      ├── Anthropic API   (structured-output digest generation — bills API credits)
+      └── Telegram Bot API → TELEGRAM_CHAT_ID
+```
+
+Deploy with `npm run deploy:digest` (idempotent; run `npm run deploy` first —
+the digest reads the MCP deploy's tokens secret). Notes:
+
+- **EventBridge Scheduler, not classic rules**: Scheduler takes an IANA
+  timezone, so "7am Mountain" survives the November DST flip. It invokes via
+  an IAM role (no Lambda resource policy needed) and its *default* retry
+  policy is 185 attempts — we cap it at 2, because each retry re-bills the
+  generation call and a thrice-broken digest needs a human.
+- **History moved to S3**: a Lambda's filesystem evaporates between runs, so
+  `data/digest-history.json` only feeds the *first* deploy (seed). After
+  that the bucket is the source of truth, same never-clobber rule as the
+  tokens secret.
+- **Failures are loud**: `sendMessage` throws, the handler doesn't catch, so
+  a missed Tuesday shows as a failed invocation in CloudWatch
+  (`aws logs tail /aws/lambda/muff-digest --region us-east-2`).
+- The rendered digest is logged on every run — cheap audit trail.
+
 ## Connecting a client
 
 ```
