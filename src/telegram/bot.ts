@@ -29,7 +29,11 @@ export async function sendMessage(chatId: number, text: string): Promise<void> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
   });
-  if (!res.ok) console.error("sendMessage failed:", res.status, await res.text());
+  // Throw, don't log: the scheduled digest (MUFF-43) must fail loudly if
+  // delivery fails. The bot's poll loop catches per-update errors anyway.
+  if (!res.ok) {
+    throw new Error(`Telegram sendMessage failed: ${res.status} ${await res.text()}`);
+  }
 }
 
 /** Route one update. This is the seam the LangGraph agent (ANU-13) plugs into. */
