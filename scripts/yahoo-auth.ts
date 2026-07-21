@@ -22,7 +22,7 @@ const match = pasted.match(/[?&]code=([^&\s]+)/);
 const code = match ? decodeURIComponent(match[1]) : pasted.trim();
 
 const tokens = await exchangeCode(code);
-saveTokens(tokens);
+await saveTokens(tokens);
 
 console.log("\n✅ Tokens saved to .tokens.json (gitignored).");
 console.log("   Run `npm run smoke` to verify the connection.\n");

@@ -1,42 +1,38 @@
 /**
  * ANU-11 — Authenticated Yahoo Fantasy API client.
  *
- * Token persistence: local JSON file for dev (gitignored).
- * In the Lambda deployment this swaps to Secrets Manager — the
- * load/save functions are the seam where that swap happens.
+ * Token persistence goes through the TokenStore seam (token-store.ts):
+ * local JSON file in dev, Secrets Manager on Lambda (MUFF-39). Tokens are
+ * cached in module scope so a warm Lambda container only reads the secret
+ * once, not per tool call.
  */
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import {
   refreshAccessToken,
   isExpired,
   type TokenSet,
 } from "./oauth.ts";
+import { tokenStore } from "./token-store.ts";
 
-const TOKENS_PATH = process.env.TOKENS_PATH ?? ".tokens.json";
 const API_BASE = "https://fantasysports.yahooapis.com/fantasy/v2";
 
-export function saveTokens(tokens: TokenSet): void {
-  writeFileSync(TOKENS_PATH, JSON.stringify(tokens, null, 2), { mode: 0o600 });
-}
+let cached: TokenSet | null = null;
 
-export function loadTokens(): TokenSet {
-  if (!existsSync(TOKENS_PATH)) {
-    throw new Error(
-      `No ${TOKENS_PATH} found — run \`npm run auth\` first to complete the OAuth flow.`,
-    );
-  }
-  return JSON.parse(readFileSync(TOKENS_PATH, "utf8")) as TokenSet;
+export async function saveTokens(tokens: TokenSet): Promise<void> {
+  cached = tokens;
+  await tokenStore.save(tokens);
 }
 
 /** Returns a valid access token, refreshing (and persisting) if needed. */
 async function getAccessToken(): Promise<string> {
-  let tokens = loadTokens();
-  if (isExpired(tokens)) {
-    tokens = await refreshAccessToken(tokens.refresh_token);
-    saveTokens(tokens);
+  cached ??= await tokenStore.load();
+  if (isExpired(cached)) {
+    // Yahoo refresh tokens don't rotate, so concurrent refreshes from
+    // parallel Lambda containers are safe — last write just wins.
+    cached = await refreshAccessToken(cached.refresh_token);
+    await tokenStore.save(cached);
   }
-  return tokens.access_token;
+  return cached.access_token;
 }
 
 /** Thrown on non-2xx Yahoo responses; carries the HTTP status so callers
