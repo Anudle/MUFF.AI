@@ -11,11 +11,16 @@
     "auth": "node --env-file=.env --experimental-strip-types scripts/yahoo-auth.ts",
     "smoke": "node --env-file=.env --experimental-strip-types scripts/smoke.ts",
     "mcp": "node --env-file=.env --experimental-strip-types src/mcp/server.ts",
+    "mcp:http": "node --env-file=.env --experimental-strip-types scripts/mcp-http-local.ts",
+    "deploy": "bash infra/deploy.sh",
+    "verify:remote": "node --env-file=.env --experimental-strip-types scripts/mcp-remote-verify.ts",
     "agent": "node --env-file=.env --experimental-strip-types scripts/agent-chat.ts",
     "bot": "node --env-file=.env --experimental-strip-types src/telegram/bot.ts"
   },
   "devDependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1092.0",
     "@types/node": "^22.0.0",
+    "esbuild": "^0.28.1",
     "typescript": "^5.6.0"
   },
   "dependencies": {
