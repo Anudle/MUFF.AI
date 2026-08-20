@@ -9,7 +9,9 @@
  * Lambda (MUFF-43) — this file is only argument parsing.
  */
 
+import { formatCost } from "../src/digest/cost.ts";
 import { runDigest } from "../src/digest/run.ts";
+import { storeLabel } from "../src/digest/store.ts";
 
 const args = process.argv.slice(2);
 const weekArg = args.indexOf("--week");
@@ -18,3 +20,9 @@ const send = args.includes("--send");
 
 const result = await runDigest({ week, send });
 console.log(`\n${result.text}\n`);
+console.error(
+  `Cost: ${formatCost(result.cost)} in ${(result.duration_ms / 1000).toFixed(1)}s`,
+);
+console.error(
+  result.archived ? `Archived: ${storeLabel}${result.archived}` : "Archived: FAILED (see above)",
+);
