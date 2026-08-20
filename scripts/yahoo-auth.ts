@@ -10,6 +10,10 @@ import { saveTokens } from "../src/yahoo/client.ts";
 
 const rl = createInterface({ input: process.stdin, output: process.stdout });
 
+console.log("\nRequesting scope fspt-r (Fantasy Sports read).");
+console.log("On the consent screen, check that Yahoo actually lists Fantasy Sports.");
+console.log("If it doesn't — or Yahoo rejects the scope — the app itself has lost");
+console.log("Fantasy API access and re-consenting won't fix it.\n");
 console.log("\n1. Open this URL in your browser and click 'Agree':\n");
 console.log("   " + buildAuthUrl() + "\n");
 console.log("2. Yahoo will redirect to https://localhost:8000/?code=... — that page");

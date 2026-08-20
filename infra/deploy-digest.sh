@@ -64,6 +64,8 @@ npx esbuild src/digest/lambda.ts --bundle --platform=node --format=esm --target=
 echo "    $(du -h "$BUNDLE_DIR/function.zip" | cut -f1) zipped"
 
 # --- S3: history bucket, private, seeded once --------------------------------
+# Two things live here: digest-history.json (power rankings, read+written every
+# run) and runs/ (MUFF-16 archive, one immutable record per run).
 if ! aws s3api head-bucket --bucket "$BUCKET" >/dev/null 2>&1; then
   echo "==> Creating bucket $BUCKET"
   aws s3api create-bucket --bucket "$BUCKET" --region "$REGION" \
@@ -105,7 +107,8 @@ aws iam put-role-policy --role-name "$ROLE" --policy-name "$POLICY_NAME" \
        "Resource": "'"$SECRET_ARN"'"},
       {"Effect": "Allow",
        "Action": ["s3:GetObject", "s3:PutObject"],
-       "Resource": "arn:aws:s3:::'"$BUCKET"'/'"$HISTORY_KEY"'"}
+       "Resource": ["arn:aws:s3:::'"$BUCKET"'/'"$HISTORY_KEY"'",
+                    "arn:aws:s3:::'"$BUCKET"'/runs/*"]}
     ]
   }'
 ROLE_ARN="$(aws iam get-role --role-name "$ROLE" --query Role.Arn --output text)"

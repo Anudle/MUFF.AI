@@ -81,6 +81,10 @@ goes to Secrets Manager for the Lambda in MUFF-39.
   handler body is exactly `scripts/digest.ts`'s gather → generate → render →
   send sequence.
 
+## Cost + archiving
+
+Every run is priced and archived — see `docs/observability.md` (MUFF-16).
+
 ## CCA-F mapping
 
 - **Agentic architecture** — the workflow-vs-agent decision itself.
