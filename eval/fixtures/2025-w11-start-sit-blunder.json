@@ -1,0 +1,280 @@
+{
+ "league": "Monarch United (synthetic)",
+ "season": "2025",
+ "week": 11,
+ "results": [
+  {
+   "winner": "This One's for John",
+   "is_tied": false,
+   "teams": [
+    {
+     "team": "Super Mega Awesome ✨",
+     "manager": null,
+     "points": 98.3,
+     "projected": 108.14
+    },
+    {
+     "team": "This One's for John",
+     "manager": null,
+     "points": 104.1,
+     "projected": 112.9
+    }
+   ],
+   "margin": 5.8
+  },
+  {
+   "winner": "Anubis",
+   "is_tied": false,
+   "teams": [
+    {
+     "team": "Anubis",
+     "manager": null,
+     "points": 122.46,
+     "projected": 111.02
+    },
+    {
+     "team": "JustBoxes",
+     "manager": null,
+     "points": 90.88,
+     "projected": 87.5
+    }
+   ],
+   "margin": 31.58
+  },
+  {
+   "winner": "Cow Bellz",
+   "is_tied": false,
+   "teams": [
+    {
+     "team": "Cow Bellz",
+     "manager": null,
+     "points": 105.24,
+     "projected": 100.66
+    },
+    {
+     "team": "CharBenét Ramsey",
+     "manager": null,
+     "points": 101.7,
+     "projected": 103.42
+    }
+   ],
+   "margin": 3.54
+  },
+  {
+   "winner": "LUCAS'S LUCKY LIONS",
+   "is_tied": false,
+   "teams": [
+    {
+     "team": "Tebow's Purity Ring",
+     "manager": null,
+     "points": 93.36,
+     "projected": 97.8
+    },
+    {
+     "team": "LUCAS'S LUCKY LIONS",
+     "manager": null,
+     "points": 110.62,
+     "projected": 94.18
+    }
+   ],
+   "margin": 17.26
+  }
+ ],
+ "highest_scorer": {
+  "team": "Anubis",
+  "points": 122.46
+ },
+ "lowest_scorer": {
+  "team": "JustBoxes",
+  "points": 90.88
+ },
+ "closest_game": {
+  "teams": [
+   "Cow Bellz",
+   "CharBenét Ramsey"
+  ],
+  "margin": 3.54
+ },
+ "biggest_blowout": {
+  "winner": "Anubis",
+  "loser": "JustBoxes",
+  "margin": 31.58
+ },
+ "overachiever": {
+  "team": "LUCAS'S LUCKY LIONS",
+  "delta": 16.44
+ },
+ "underachiever": {
+  "team": "Super Mega Awesome ✨",
+  "delta": -9.84
+ },
+ "bench_points": [
+  {
+   "team": "Super Mega Awesome ✨",
+   "manager": null,
+   "bench_points": 52.6
+  },
+  {
+   "team": "JustBoxes",
+   "manager": null,
+   "bench_points": 29.14
+  },
+  {
+   "team": "CharBenét Ramsey",
+   "manager": null,
+   "bench_points": 24.9
+  },
+  {
+   "team": "This One's for John",
+   "manager": null,
+   "bench_points": 22.36
+  },
+  {
+   "team": "LUCAS'S LUCKY LIONS",
+   "manager": null,
+   "bench_points": 18.72
+  },
+  {
+   "team": "Anubis",
+   "manager": null,
+   "bench_points": 15.08
+  },
+  {
+   "team": "Cow Bellz",
+   "manager": null,
+   "bench_points": 12.54
+  },
+  {
+   "team": "Tebow's Purity Ring",
+   "manager": null,
+   "bench_points": 9.2
+  }
+ ],
+ "worst_start_sit": {
+  "team": "Super Mega Awesome ✨",
+  "manager": null,
+  "benched": {
+   "name": "Koa Malone",
+   "points": 38.9
+  },
+  "started": {
+   "name": "Britt Sanders",
+   "slot": "QB",
+   "points": 7.2
+  },
+  "delta": 31.7,
+  "would_have_flipped_result": true
+ },
+ "standings": [
+  {
+   "rank": 1,
+   "team": "This One's for John",
+   "manager": null,
+   "record": "9-2",
+   "points_for": 1268.4,
+   "streak": "W4"
+  },
+  {
+   "rank": 2,
+   "team": "Anubis",
+   "manager": null,
+   "record": "8-3",
+   "points_for": 1194.18,
+   "streak": "W2"
+  },
+  {
+   "rank": 3,
+   "team": "Cow Bellz",
+   "manager": null,
+   "record": "7-3-1",
+   "points_for": 1146.02,
+   "streak": "W2"
+  },
+  {
+   "rank": 4,
+   "team": "Super Mega Awesome ✨",
+   "manager": null,
+   "record": "6-5",
+   "points_for": 1130.56,
+   "streak": "L3"
+  },
+  {
+   "rank": 5,
+   "team": "CharBenét Ramsey",
+   "manager": null,
+   "record": "6-5",
+   "points_for": 1118.9,
+   "streak": "L1"
+  },
+  {
+   "rank": 6,
+   "team": "Tebow's Purity Ring",
+   "manager": null,
+   "record": "5-6",
+   "points_for": 1090.3,
+   "streak": "L1"
+  },
+  {
+   "rank": 7,
+   "team": "LUCAS'S LUCKY LIONS",
+   "manager": null,
+   "record": "4-7",
+   "points_for": 1056.78,
+   "streak": "W1"
+  },
+  {
+   "rank": 8,
+   "team": "JustBoxes",
+   "manager": null,
+   "record": "2-8-1",
+   "points_for": 987.62,
+   "streak": "L2"
+  }
+ ],
+ "recent_transactions": [
+  {
+   "type": "add/drop",
+   "date": "2025-11-18",
+   "summary": "Khalil Shakir (WR) add: FA → Anubis; Rondale Moore (WR) drop: Anubis → W"
+  },
+  {
+   "type": "add",
+   "date": "2025-11-17",
+   "summary": "Chuba Hubbard (RB) add: W → LUCAS'S LUCKY LIONS"
+  }
+ ],
+ "previous_power_rankings": [
+  {
+   "rank": 1,
+   "team": "This One's for John"
+  },
+  {
+   "rank": 2,
+   "team": "Anubis"
+  },
+  {
+   "rank": 3,
+   "team": "Cow Bellz"
+  },
+  {
+   "rank": 4,
+   "team": "CharBenét Ramsey"
+  },
+  {
+   "rank": 5,
+   "team": "Super Mega Awesome ✨"
+  },
+  {
+   "rank": 6,
+   "team": "Tebow's Purity Ring"
+  },
+  {
+   "rank": 7,
+   "team": "LUCAS'S LUCKY LIONS"
+  },
+  {
+   "rank": 8,
+   "team": "JustBoxes"
+  }
+ ]
+}

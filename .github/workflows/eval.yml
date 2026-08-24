@@ -1,0 +1,26 @@
+# MUFF-16 — the regression gate: typecheck + eval suite on every PR.
+#
+# Deliberately keyless: what runs here is the deterministic layer (checker
+# self-test on the synthetic fixtures + rule checks over any committed golden
+# records). The live golden-dataset eval (`npm run eval -- --live`) costs API
+# money and stays a local/manual step until real season records justify
+# promoting it to a scheduled job with ANTHROPIC_API_KEY as a repo secret.
+name: eval
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run eval

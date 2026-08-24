@@ -18,6 +18,7 @@
     "agent": "node --env-file=.env --experimental-strip-types scripts/agent-chat.ts",
     "digest": "node --env-file=.env --experimental-strip-types scripts/digest.ts",
     "runs": "node --env-file=.env --experimental-strip-types scripts/digest-runs.ts",
+    "eval": "node --env-file-if-exists=.env --experimental-strip-types scripts/eval.ts",
     "bot": "node --env-file=.env --experimental-strip-types src/telegram/bot.ts"
   },
   "devDependencies": {

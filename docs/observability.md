@@ -77,13 +77,48 @@ archive both ride it. Same reasoning as the MUFF-39 token store — a Lambda
 container's filesystem evaporates between invocations, and the alternative
 (DynamoDB) buys nothing for one small JSON blob written once a week.
 
-That "S3 vs. a real database" call is the ADR KR1 asks for. Not written yet.
+That "S3 vs. a real database" call is the ADR KR1 asks for:
+[ADR-0001](adr/0001-s3-json-blobs-not-dynamodb.md).
+
+## The eval suite
+
+`npm run eval`, gated in CI by `.github/workflows/eval.yml` on every PR.
+
+The eval pyramid, cheapest layer first: **rule checks** (free, exact, every
+PR) → **LLM-as-judge** for tone/quality (costs a call, not built yet) →
+**humans** (the group chat). The rule layer is `src/eval/checks.ts`:
+
+- **Groundedness** — harvest every number the facts contain (including inside
+  strings: records `5-2`, streaks `W3`, transaction summaries), then demand
+  every number in the model's prose appears in that set, 1-decimal rounding
+  allowed. A cited stat with no source fact is a hallucination, full stop.
+- **Format** — 3-5 trash-talk lines, each citing a number; one game note per
+  matchup; power rankings covering all teams with ranks 1..N exactly once; no
+  model-authored movement arrows (render.ts owns those); empty waiver watch
+  when the facts show no transactions; rendered text within Telegram's 4096.
+
+What it scores, in order:
+
+1. **Checker self-test** — the four synthetic `WeekFacts` in `eval/fixtures/`
+   (a blowout week, a nail-biter with a tie, a no-transactions week, a
+   start/sit-blunder week) each get a programmatically grounded digest that
+   must pass and a corrupted one — one number swapped for a value nowhere in
+   the facts — that must fail. A checker that never flags anything looks
+   identical to one that works, so CI proves it catches a planted
+   hallucination on every PR. No keys, no network.
+2. **Archived run records** — everything in `data/runs/` (via
+   `npm run runs -- --pull`) and `eval/golden/`. Empty until the season
+   starts; this is where real Tuesdays get graded.
+3. **`npm run eval -- --live`** — the golden-dataset eval proper: run the
+   actual `generateDigest` call against each frozen fixture and rule-check the
+   real model output, cost printed per fixture. Local/manual for now; costs
+   API money by design.
 
 ## Still open in MUFF-16
 
-- Groundedness scoring: every number in `trash_talk` must appear in `facts`.
-- Format/length checks against Telegram limits.
 - LLM-as-judge for tone, on top of the rule checks.
-- Regression gate in GitHub Actions.
+- Golden records: promote real archived runs into `eval/golden/` once the
+  season produces them, and consider a scheduled `--live` CI job with
+  `ANTHROPIC_API_KEY` as a repo secret.
 - Latency/failure alerting (a Tuesday that doesn't fire is currently only
   visible as a failed invocation in CloudWatch).
