@@ -15,7 +15,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import { priceRun, type RunCost } from "./cost.ts";
 import type { WeekFacts } from "./facts.ts";
+
+const MODEL = "claude-opus-4-8";
 
 export const DigestSchema = z.object({
   headline: z.string().describe("One punchy line for the top of the digest."),
@@ -54,10 +57,20 @@ Rules:
 - If previous_power_rankings is present, treat it as what you published last week: rank with fresh eyes, but call out notable risers/fallers in comments using exact previous positions ("up from 7th"). Only mention a previous position if the rank actually changed. Movement arrows are added automatically — don't write arrow symbols yourself.
 - No preamble, no meta-commentary. Fill the schema.`;
 
-export async function generateDigest(facts: WeekFacts): Promise<Digest> {
+/**
+ * MUFF-16: the call reports what it cost. Token usage is only available on
+ * the response object, so pricing happens here — at the one place that knows
+ * both the model and the usage — rather than being re-derived downstream.
+ */
+export interface GeneratedDigest {
+  digest: Digest;
+  cost: RunCost;
+}
+
+export async function generateDigest(facts: WeekFacts): Promise<GeneratedDigest> {
   const client = new Anthropic();
   const response = await client.messages.parse({
-    model: "claude-opus-4-8",
+    model: MODEL,
     max_tokens: 16000,
     system: SYSTEM,
     messages: [
@@ -71,5 +84,7 @@ export async function generateDigest(facts: WeekFacts): Promise<Digest> {
   if (!response.parsed_output) {
     throw new Error(`Digest generation returned no parseable output (stop_reason: ${response.stop_reason})`);
   }
-  return response.parsed_output;
+  // response.model is what actually served the request — prefer it over the
+  // requested id so an alias or server-side reroute prices correctly.
+  return { digest: response.parsed_output, cost: priceRun(response.model ?? MODEL, response.usage) };
 }

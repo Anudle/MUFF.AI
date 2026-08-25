@@ -11,11 +11,21 @@
  *    param out of the dead URL and pastes it back — same UX as oob.
  *  - Access tokens live ~1 hour; refresh tokens are long-lived.
  *  - Token endpoint wants HTTP Basic auth (client_id:client_secret).
+ *  - Scope: `fspt-r` is Fantasy Sports read. Historically the consent flow
+ *    worked without any `scope` param — permissions came from the app's
+ *    console config alone — but a token minted that way carries no fantasy
+ *    grant if the app config is the thing that's wrong, and every call comes
+ *    back 403. Asking for the scope explicitly makes the grant visible at
+ *    consent time: Yahoo either shows the Fantasy Sports permission on the
+ *    approval screen, or refuses the scope outright. That turns a silent
+ *    403-on-everything into a diagnosable failure.
  */
 
 const AUTH_URL = "https://api.login.yahoo.com/oauth2/request_auth";
 const TOKEN_URL = "https://api.login.yahoo.com/oauth2/get_token";
 const REDIRECT_URI = "https://localhost:8000";
+/** Fantasy Sports read. `fspt-w` would be read/write — Yahoo grants read only. */
+const SCOPE = "fspt-r";
 
 export interface TokenSet {
   access_token: string;
@@ -44,11 +54,12 @@ function basicAuthHeader(): string {
 }
 
 /** Step 1: URL the human opens in a browser to grant access. */
-export function buildAuthUrl(redirectUri = REDIRECT_URI): string {
+export function buildAuthUrl(redirectUri = REDIRECT_URI, scope = SCOPE): string {
   const params = new URLSearchParams({
     client_id: requireEnv("YAHOO_CLIENT_ID"),
     redirect_uri: redirectUri,
     response_type: "code",
+    scope,
     language: "en-us",
   });
   return `${AUTH_URL}?${params}`;
