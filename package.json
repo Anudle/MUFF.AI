@@ -19,6 +19,7 @@
     "digest": "node --env-file=.env --experimental-strip-types scripts/digest.ts",
     "runs": "node --env-file=.env --experimental-strip-types scripts/digest-runs.ts",
     "eval": "node --env-file-if-exists=.env --experimental-strip-types scripts/eval.ts",
+    "spike:sleeper": "node --env-file-if-exists=.env --experimental-strip-types scripts/sleeper-spike.ts",
     "bot": "node --env-file=.env --experimental-strip-types src/telegram/bot.ts"
   },
   "devDependencies": {

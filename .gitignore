@@ -3,3 +3,4 @@ node_modules/
 .tokens.json
 dist/
 .DS_Store
+.cache/
