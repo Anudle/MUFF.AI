@@ -7,8 +7,9 @@
  * agent has to be able to reason about failures.
  */
 
+import { SleeperApiError } from "../sleeper/client.ts";
 import { YahooApiError } from "../yahoo/client.ts";
-import { WeekNotAvailableError } from "./yahoo-data.ts";
+import { WeekNotAvailableError } from "./provider.ts";
 
 export type ErrorCode =
   | "AUTH_EXPIRED"
@@ -66,7 +67,30 @@ export function toToolError<T = never>(e: unknown): ToolResult<T> {
         );
     }
   }
+  if (e instanceof SleeperApiError) {
+    switch (e.status) {
+      case 404:
+        return err(
+          "LEAGUE_NOT_FOUND",
+          "Sleeper league or resource not found. Do not retry with the same arguments; check SLEEPER_LEAGUE_ID.",
+        );
+      case 429:
+        return err(
+          "RATE_LIMITED",
+          "Sleeper is rate limiting us (~90 req/min per IP). Safe to retry after waiting ~60 seconds.",
+        );
+      default:
+        return err(
+          "UPSTREAM_ERROR",
+          `Sleeper returned HTTP ${e.status}. Transient upstream problem — safe to retry once; if it persists, report to the user.`,
+        );
+    }
+  }
   const message = e instanceof Error ? e.message : String(e);
+  // Sleeper config errors carry their own do-not-retry guidance in the message.
+  if (message.includes("SLEEPER_LEAGUE_ID") || message.includes("SLEEPER_USERNAME")) {
+    return err("LEAGUE_NOT_FOUND", message);
+  }
   if (message.includes("No .tokens.json") || message.includes("npm run auth")) {
     return err(
       "AUTH_EXPIRED",

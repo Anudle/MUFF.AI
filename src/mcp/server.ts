@@ -9,7 +9,7 @@
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { buildServer } from "./build-server.ts";
-import { resolveLeague } from "./yahoo-data.ts";
+import { PROVIDER, resolveLeague } from "./data.ts";
 
 const server = buildServer();
 await server.connect(new StdioServerTransport());
@@ -19,7 +19,8 @@ await server.connect(new StdioServerTransport());
 resolveLeague()
   .then((l) =>
     console.error(
-      `muff-yahoo-fantasy: serving ${l.league_name} ${l.season} as ${l.my_team_name}`,
+      `muff-${PROVIDER}-fantasy: serving ${l.league_name} ${l.season}` +
+        (l.my_team_name ? ` as ${l.my_team_name}` : ""),
     ),
   )
   .catch(() => {});
