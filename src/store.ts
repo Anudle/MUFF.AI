@@ -1,13 +1,16 @@
 /**
- * MUFF-16 — the JSON blob store behind everything the digest persists.
+ * The JSON blob store behind everything MUFF persists.
  *
  * Extracted from history.ts when run archiving (MUFF-16) needed the same
- * local-file-vs-S3 seam that power rankings (MUFF-38/43) already had. One
- * store, keyed by path: `digest-history.json`, `runs/2025-w16-….json`.
+ * local-file-vs-S3 seam that power rankings (MUFF-38/43) already had;
+ * promoted out of src/digest/ when the Sleeper players cache (MUFF-49)
+ * became its first non-digest consumer. One store, keyed by path:
+ * `digest-history.json`, `runs/2025-w16-….json`, `players/sleeper-nfl.json`.
  *
- * Local dev writes under `data/`; Lambda writes to HISTORY_BUCKET, because a
- * Lambda container's filesystem evaporates between invocations. Everything
- * here is small JSON written once a week — no concurrency to fight, no
+ * Local dev writes under `data/`; Lambda writes to HISTORY_BUCKET (named for
+ * its first tenant, now the one MUFF blob bucket), because a Lambda
+ * container's filesystem evaporates between invocations. Everything here is
+ * modest JSON written at most daily — no concurrency to fight, no
  * pagination to worry about.
  */
 

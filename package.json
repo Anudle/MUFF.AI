@@ -14,6 +14,8 @@
     "mcp:http": "node --env-file=.env --experimental-strip-types scripts/mcp-http-local.ts",
     "deploy": "bash infra/deploy.sh",
     "deploy:digest": "bash infra/deploy-digest.sh",
+    "deploy:sync": "bash infra/deploy-players-sync.sh",
+    "sync:players": "node --env-file-if-exists=.env --experimental-strip-types scripts/sync-players.ts",
     "verify:remote": "node --env-file=.env --experimental-strip-types scripts/mcp-remote-verify.ts",
     "agent": "node --env-file=.env --experimental-strip-types scripts/agent-chat.ts",
     "digest": "node --env-file=.env --experimental-strip-types scripts/digest.ts",

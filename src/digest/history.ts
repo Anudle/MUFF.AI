@@ -9,7 +9,7 @@
  * needed the same one).
  */
 
-import { store } from "./store.ts";
+import { store } from "../store.ts";
 
 interface History {
   power_rankings: Record<string, { rank: number; team: string }[]>; // "season:week"

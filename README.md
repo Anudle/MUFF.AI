@@ -15,6 +15,7 @@ The five MCP tools and the digest are provider-blind: they import from
 | League | auto-discovered (`YAHOO_LEAGUE_KEY` overrides) | `SLEEPER_LEAGUE_ID` (required) |
 | "My team" | from login | `SLEEPER_USERNAME` (optional — league-wide tools work without it) |
 | Projected points | yes | no → over/underachiever digest facts are omitted |
+| Player names | inline in API responses | trimmed `/players/nfl` map, synced daily to S3 (`npm run deploy:sync`), local runs cache under `data/players/` |
 
 Verify either path end-to-end over real MCP stdio:
 

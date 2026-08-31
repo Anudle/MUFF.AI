@@ -41,9 +41,9 @@ Base `https://api.sleeper.app/v1` · read-only · no auth · ~90 req/min per IP.
 Everything above speaks player IDs. `players/nfl` maps ID → name, but the blob
 is now **14.6MB / 12,225 players / 53 fields each** (docs still say 5MB).
 Measured: trimmed to `id → {name, pos, team}` it's **760KB** — small enough
-for Lambda memory, cached in S3, refreshed daily (step 3). Only the ~15 names
-a tool answer references ever cross the tool boundary. The spike caches the
-trimmed map at `.cache/sleeper-players.json` (24h TTL, gitignored).
+for Lambda memory, cached in S3, refreshed daily (built in step 3:
+`src/sleeper/players.ts` + `infra/deploy-players-sync.sh`, docs/deploy.md).
+Only the ~15 names a tool answer references ever cross the tool boundary.
 
 ## Gaps vs the Yahoo contract
 
