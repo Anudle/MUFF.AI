@@ -20,7 +20,7 @@
 import type { Digest } from "./generate.ts";
 import type { WeekFacts } from "./facts.ts";
 import type { RunCost } from "./cost.ts";
-import { store } from "./store.ts";
+import { store } from "../store.ts";
 
 export const RUNS_PREFIX = "runs";
 

@@ -17,7 +17,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { listRuns, loadRun, type RunRecord } from "../src/digest/archive.ts";
-import { storeLabel } from "../src/digest/store.ts";
+import { storeLabel } from "../src/store.ts";
 
 const pull = process.argv.includes("--pull");
 

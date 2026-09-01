@@ -13,6 +13,11 @@
  */
 
 import { yahooFetch } from "../yahoo/client.ts";
+import {
+  resolveWeek,
+  WeekNotAvailableError,
+  type LeagueContext,
+} from "./provider.ts";
 
 type Json = any;
 
@@ -53,20 +58,6 @@ function managerName(merged: Record<string, Json>): string | null {
 // ---------------------------------------------------------------------------
 // League + team resolution (cached for the process lifetime)
 // ---------------------------------------------------------------------------
-
-export interface LeagueContext {
-  league_key: string;
-  league_name: string;
-  season: string;
-  start_week: number;
-  end_week: number;
-  current_week: number;
-  is_finished: boolean;
-  my_team_key: string;
-  my_team_name: string;
-  /** Every team in the league (MUFF-38: digest needs league-wide rosters). */
-  teams: { team_key: string; name: string; manager: string | null }[];
-}
 
 let leagueCache: Promise<LeagueContext> | null = null;
 
@@ -129,26 +120,6 @@ export function resolveLeague(): Promise<LeagueContext> {
     };
   })();
   return leagueCache;
-}
-
-/** Thrown for weeks outside the played range; mapped to WEEK_NOT_AVAILABLE. */
-export class WeekNotAvailableError extends Error {
-  constructor(week: number, league: LeagueContext) {
-    super(
-      `Week ${week} is not available for ${league.league_name} (season ${league.season}): ` +
-        `valid weeks are ${league.start_week}–${league.current_week}. ` +
-        `Do not retry with this week; omit the week argument to use the current week.`,
-    );
-    this.name = "WeekNotAvailableError";
-  }
-}
-
-function resolveWeek(league: LeagueContext, week?: number): number {
-  if (week === undefined) return league.current_week;
-  if (week < league.start_week || week > league.current_week) {
-    throw new WeekNotAvailableError(week, league);
-  }
-  return week;
 }
 
 // ---------------------------------------------------------------------------

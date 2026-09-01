@@ -15,7 +15,7 @@ import {
   getTransactions,
   getWeekResults,
   resolveLeague,
-} from "../mcp/yahoo-data.ts";
+} from "../mcp/data.ts";
 import { loadPowerRankings } from "./history.ts";
 
 // Slots that score points. Everything else (BN, IR) rides the pine.

@@ -11,7 +11,7 @@
 
 import { formatCost } from "../src/digest/cost.ts";
 import { runDigest } from "../src/digest/run.ts";
-import { storeLabel } from "../src/digest/store.ts";
+import { storeLabel } from "../src/store.ts";
 
 const args = process.argv.slice(2);
 const weekArg = args.indexOf("--week");

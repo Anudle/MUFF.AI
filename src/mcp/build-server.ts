@@ -26,7 +26,8 @@ import {
   getStandings,
   getTransactions,
   getWeekResults,
-} from "./yahoo-data.ts";
+} from "./data.ts";
+import { PROVIDER } from "./data.ts";
 
 const weekParam = z
   .number()
@@ -53,7 +54,7 @@ async function run<T>(fetcher: () => Promise<T>) {
 }
 
 export function buildServer(): McpServer {
-  const server = new McpServer({ name: "muff-yahoo-fantasy", version: "0.1.0" });
+  const server = new McpServer({ name: `muff-${PROVIDER}-fantasy`, version: "0.2.0" });
 
   server.registerTool(
     "get_roster",

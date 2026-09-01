@@ -125,6 +125,36 @@ the digest reads the MCP deploy's tokens secret). Notes:
   (`aws logs tail /aws/lambda/muff-digest --region us-east-2`).
 - The rendered digest is logged on every run — cheap audit trail.
 
+## The daily players sync (MUFF-49 step 3)
+
+```
+EventBridge Scheduler  muff-players-sync-daily
+  cron(0 5 * * ? *) America/Denver, ±15 min flex, year-round
+      ▼
+muff-players-sync      (nodejs22.x, 512 MB, 120 s timeout)
+  src/sleeper/sync-lambda.ts → syncPlayers()
+      ├── Sleeper /players/nfl              (14.6MB, the only tier-1 fetch)
+      └── S3: …-history-<acct>/players/sleeper-nfl.json  (~760KB trimmed map)
+```
+
+Deploy with `npm run deploy:sync` (idempotent, no secrets — Sleeper is
+zero-auth; shares the digest history bucket, order-independent with
+`deploy:digest`). Seed immediately with the `aws lambda invoke` line the
+script prints, or from your laptop with
+`HISTORY_BUCKET=<bucket> npm run sync:players`.
+
+- **Why a separate Lambda**: the MCP server answers interactive agent
+  traffic; making a tool call eat a 14.6MB fetch + parse when the cache
+  happens to be cold is exactly the latency spike the showcase can't have.
+  The sync pays tier-1 cost on a schedule; servers only ever read tier 2.
+- **Failure degrades, loudly**: readers (`src/sleeper/players.ts`) check the
+  blob's `fetched_at`; if it's >24h old they re-sync inline, and if that
+  fails they serve the stale map with a warning — day-old player names beat
+  a dead digest. A failed sync run itself shows in CloudWatch
+  (`aws logs tail /aws/lambda/muff-players-sync --region us-east-2`).
+- **Flexible window**: ±15 min, because "some time around 5am" is the actual
+  requirement — the digest fires at 7 and the TTL is 24h.
+
 ## Connecting a client
 
 ```

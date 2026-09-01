@@ -11,7 +11,12 @@ const client = new Client({ name: "muff-verify", version: "0.1.0" });
 await client.connect(
   new StdioClientTransport({
     command: process.execPath,
-    args: ["--env-file=.env", "--experimental-strip-types", "src/mcp/server.ts"],
+    args: ["--env-file-if-exists=.env", "--experimental-strip-types", "src/mcp/server.ts"],
+    // Pass the full parent env: the SDK's default is a minimal safe list,
+    // which would drop FANTASY_PROVIDER / SLEEPER_* given on the CLI.
+    env: Object.fromEntries(
+      Object.entries(process.env).filter(([, v]) => v !== undefined),
+    ) as Record<string, string>,
   }),
 );
 
