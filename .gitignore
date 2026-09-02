@@ -5,3 +5,4 @@ dist/
 .DS_Store
 .cache/
 data/players/
+.claude/settings.local.json
