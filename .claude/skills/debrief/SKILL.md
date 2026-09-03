@@ -19,7 +19,7 @@ Arguments: `$ARGUMENTS` — the exam task-statement ids touched today (e.g. `3.1
    - `git diff main...HEAD --stat` then the full diff for the files that matter. If the branch is already merged, use `git diff HEAD~1` on the merge/squash commit instead.
 2. Answer the three debrief questions, grounded in that diff — no generic exam-guide prose:
    - **Task statement touched:** which CCA-F task statement(s) today's change exercises, and the one-line mapping from artifact → statement.
-   - **Bait answer:** the plausible-but-wrong answer an exam question on this topic would offer, and why today's build shows it's wrong.
+   - **Bait answer:** write the exam-style question today's topic would generate, then the plausible-but-wrong answer it would offer as a distractor, and why today's build shows it's wrong. The question comes first — it's the retrieval cue.
    - **What a teammate wouldn't know:** the non-obvious thing you only learned by building it (a constraint, a gotcha, a default that surprised you).
 3. Write the entry:
 
@@ -33,6 +33,9 @@ Arguments: `$ARGUMENTS` — the exam task-statement ids touched today (e.g. `3.1
 ...
 
 ## Bait answer
+**Q:** <the exam-style question this topic would generate>
+**Bait:** <the tempting wrong answer>
+**Why it's wrong:** <grounded in today's build>
 ...
 
 ## What a teammate wouldn't know
