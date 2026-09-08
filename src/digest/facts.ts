@@ -7,6 +7,12 @@
  * them — it never does arithmetic and never sees raw rosters it could
  * misread. (CCA-F: this is the workflow half of the workflow-vs-agent
  * decision — fixed steps, deterministic code; see docs/digest-design.md.)
+ *
+ * MUFF-57 split this in two: gatherWeekFacts() FETCHES the four provider
+ * payloads, deriveWeekFacts() is the pure derivation over them. The manual
+ * ingestion path (fixtures/weekly/, src/ingest/) feeds hand-transcribed
+ * provider-shaped inputs into the same derive, so a human never types a
+ * margin, a superlative or a delta — those stay computed, same as the API path.
  */
 
 import {
@@ -75,6 +81,15 @@ export interface WeekFacts {
   previous_power_rankings: { rank: number; team: string }[] | null;
 }
 
+/** The four provider payloads (plus last week's published rankings) that every fact derives from. */
+export interface WeekInputs {
+  results: Awaited<ReturnType<typeof getWeekResults>>;
+  standings: Awaited<ReturnType<typeof getStandings>>;
+  transactions: Awaited<ReturnType<typeof getTransactions>>;
+  rosters: Awaited<ReturnType<typeof getLeagueRosters>>;
+  previous_power_rankings: WeekFacts["previous_power_rankings"];
+}
+
 export async function gatherWeekFacts(week?: number): Promise<WeekFacts> {
   const league = await resolveLeague();
   // For the Tuesday digest with no explicit week, recap the LAST completed
@@ -84,17 +99,28 @@ export async function gatherWeekFacts(week?: number): Promise<WeekFacts> {
     week ??
     (league.is_finished ? league.current_week : Math.max(league.start_week, league.current_week - 1));
 
-  const [results, standings, transactions, rosters] = [
-    await getWeekResults(w),
-    await getStandings(),
-    await getTransactions(15),
-    await getLeagueRosters(w),
-  ];
+  const results = await getWeekResults(w);
+  return deriveWeekFacts(w, {
+    results,
+    standings: await getStandings(),
+    transactions: await getTransactions(15),
+    rosters: await getLeagueRosters(w),
+    previous_power_rankings: await loadPowerRankings(results.season, w - 1),
+  });
+}
 
+/**
+ * Pure derivation: no I/O, no provider, deterministic for a given input.
+ * Everything the digest model is allowed to cite is computed here.
+ */
+export function deriveWeekFacts(w: number, inputs: WeekInputs): WeekFacts {
+  const { results, standings, transactions, rosters } = inputs;
   // --- matchup-level facts ---------------------------------------------------
   const games = results.matchups.map((m) => {
     const pts = m.teams.map((t) => t.points).filter((p): p is number => p !== null);
-    const margin = pts.length === 2 ? Math.abs(pts[0] - pts[1]) : null;
+    // 2-decimal rounding: raw subtraction yields 3.3799999999999955, which the
+    // model would faithfully quote (MUFF-57 found this via the manual path).
+    const margin = pts.length === 2 ? +Math.abs(pts[0] - pts[1]).toFixed(2) : null;
     return {
       winner: m.winner,
       is_tied: m.is_tied,
@@ -189,7 +215,7 @@ export async function gatherWeekFacts(week?: number): Promise<WeekFacts> {
       points_for: s.points_for,
       streak: s.streak,
     })),
-    previous_power_rankings: await loadPowerRankings(results.season, w - 1),
+    previous_power_rankings: inputs.previous_power_rankings,
     recent_transactions: transactions.transactions.slice(0, 10).map((t) => ({
       type: t.type,
       date: t.date,

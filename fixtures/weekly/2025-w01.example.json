@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "source": {
+    "kind": "manual",
+    "ingested_by": "Anu",
+    "ingested_at": null,
+    "notes": "Example transcription. Numbers are the synthetic week-1 eval fixture, so `--facts` output can be diffed against eval/fixtures/2025-w01-blowout.json."
+  },
+  "league": "Monarch United (synthetic)",
+  "season": "2025",
+  "week": 1,
+  "matchups": [
+    {
+      "teams": [
+        {
+          "team": "This One's for John",
+          "points": 156.42,
+          "projected": 118.46
+        },
+        {
+          "team": "JustBoxes",
+          "points": 71.18,
+          "projected": 102.34
+        }
+      ]
+    },
+    {
+      "teams": [
+        {
+          "team": "Anubis",
+          "points": 112.06,
+          "projected": 108.9
+        },
+        {
+          "team": "Cow Bellz",
+          "points": 98.44,
+          "projected": 105.62
+        }
+      ]
+    },
+    {
+      "teams": [
+        {
+          "team": "LUCAS'S LUCKY LIONS",
+          "points": 121.3,
+          "projected": 115.74
+        },
+        {
+          "team": "Tebow's Purity Ring",
+          "points": 117.92,
+          "projected": 111.08
+        }
+      ]
+    },
+    {
+      "teams": [
+        {
+          "team": "Super Mega Awesome ✨",
+          "points": 104.56,
+          "projected": 119.9
+        },
+        {
+          "team": "CharBenét Ramsey",
+          "points": 96.9,
+          "projected": 99.86
+        }
+      ]
+    }
+  ],
+  "standings": [
+    {
+      "rank": 1,
+      "team": "This One's for John",
+      "manager": null,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "points_for": 156.42,
+      "streak": "W1"
+    },
+    {
+      "rank": 2,
+      "team": "LUCAS'S LUCKY LIONS",
+      "manager": null,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "points_for": 121.3,
+      "streak": "W1"
+    },
+    {
+      "rank": 3,
+      "team": "Anubis",
+      "manager": null,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "points_for": 112.06,
+      "streak": "W1"
+    },
+    {
+      "rank": 4,
+      "team": "Super Mega Awesome ✨",
+      "manager": null,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "points_for": 104.56,
+      "streak": "W1"
+    },
+    {
+      "rank": 5,
+      "team": "Tebow's Purity Ring",
+      "manager": null,
+      "wins": 0,
+      "losses": 1,
+      "ties": 0,
+      "points_for": 117.92,
+      "streak": "L1"
+    },
+    {
+      "rank": 6,
+      "team": "Cow Bellz",
+      "manager": null,
+      "wins": 0,
+      "losses": 1,
+      "ties": 0,
+      "points_for": 98.44,
+      "streak": "L1"
+    },
+    {
+      "rank": 7,
+      "team": "CharBenét Ramsey",
+      "manager": null,
+      "wins": 0,
+      "losses": 1,
+      "ties": 0,
+      "points_for": 96.9,
+      "streak": "L1"
+    },
+    {
+      "rank": 8,
+      "team": "JustBoxes",
+      "manager": null,
+      "wins": 0,
+      "losses": 1,
+      "ties": 0,
+      "points_for": 71.18,
+      "streak": "L1"
+    }
+  ],
+  "transactions": [
+    {
+      "type": "add/drop",
+      "date": "2025-09-10",
+      "players": [
+        {
+          "name": "Jaylen Warren",
+          "position": "RB",
+          "action": "add",
+          "from": "FA",
+          "to": "Cow Bellz"
+        },
+        {
+          "name": "Zach Charbonnet",
+          "position": "RB",
+          "action": "drop",
+          "from": "Cow Bellz",
+          "to": "W"
+        }
+      ]
+    },
+    {
+      "type": "add",
+      "date": "2025-09-09",
+      "players": [
+        {
+          "name": "Tucker Kraft",
+          "position": "TE",
+          "action": "add",
+          "from": "FA",
+          "to": "JustBoxes"
+        }
+      ]
+    }
+  ],
+  "bench_points": [
+    {
+      "team": "JustBoxes",
+      "bench_points": 41.34
+    },
+    {
+      "team": "Cow Bellz",
+      "bench_points": 33.06
+    },
+    {
+      "team": "Super Mega Awesome ✨",
+      "bench_points": 27.8
+    },
+    {
+      "team": "CharBenét Ramsey",
+      "bench_points": 22.14
+    },
+    {
+      "team": "Anubis",
+      "bench_points": 19.52
+    },
+    {
+      "team": "This One's for John",
+      "bench_points": 17.66
+    },
+    {
+      "team": "Tebow's Purity Ring",
+      "bench_points": 12.4
+    },
+    {
+      "team": "LUCAS'S LUCKY LIONS",
+      "bench_points": 9.88
+    }
+  ],
+  "start_sit": [
+    {
+      "team": "JustBoxes",
+      "benched": {
+        "name": "Marcus Bell",
+        "position": "RB",
+        "points": 24.7
+      },
+      "started": {
+        "name": "Trey Hooper",
+        "slot": "W/R/T",
+        "points": 4.1
+      }
+    }
+  ]
+}

@@ -69,6 +69,33 @@ routing for a model. The digest is code calling functions in the same repo;
 adding a protocol hop would be ceremony. When MUFF-39 splits deployment, the
 Lambda digest still bundles the data layer directly.
 
+## Manual ingestion path (MUFF-57 / MUFF-50 degraded mode)
+
+While the Yahoo API is blocked, a human transcribes one file per week
+(`fixtures/weekly/<season>-wNN.json`, contract in `src/ingest/weekly-fixture.ts`,
+click-order guide in `docs/ingestion-checklist.md`) and the pipeline runs
+unchanged from `deriveWeekFacts()` onward.
+
+Two decisions:
+
+- **`facts.ts` is split into fetch and derive.** `gatherWeekFacts()` pulls the
+  four provider payloads; `deriveWeekFacts(week, inputs)` is pure. The manual
+  path maps its fixture onto the same provider shapes (`toWeekInputs`) and calls
+  the same derive, so there is exactly one implementation of "closest game".
+- **The fixture holds raw inputs, not `WeekFacts`.** A hand-typed margin would
+  be the one number in the pipeline nothing computed; and raw inputs are
+  redundant with each other (points_for grows by this week's score, wins+losses
+  equals the week, the winner's streak starts with W), which is what lets
+  `npm run fixture:validate` catch a transcription slip. `--prev <last week>`
+  makes those checks exact. Derived numbers typed by hand have no witness.
+
+What the human types is kept to what Yahoo shows on three screens (standings,
+scoreboard, transactions); rosters are cut to an optional bench total and one
+optional start/sit pair per team, from which the derive still computes the
+delta and the flipped-result verdict. The eval's groundedness check does not
+re-verify inputs — a wrong score is faithfully repeated — so the validator is
+the only gate, and it prints the derived superlatives for a last human look.
+
 ## Auth
 
 `generate.ts` uses the plain Anthropic SDK → needs `ANTHROPIC_API_KEY` in

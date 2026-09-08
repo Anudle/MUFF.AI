@@ -1,0 +1,100 @@
+{
+  "_readme": [
+    "MUFF-57 manual ingestion template (degraded mode while the Yahoo API is blocked).",
+    "Copy to fixtures/weekly/<season>-wNN.json, fill every null, then run:",
+    "  npm run fixture:validate fixtures/weekly/<season>-wNN.json -- --prev fixtures/weekly/<last week>.json",
+    "Keys starting with _ are hints and are ignored by the validator. Click-order checklist: docs/ingestion-checklist.md.",
+    "Type only what Yahoo SHOWS. Margins, superlatives, deltas and the start/sit verdict are computed in code."
+  ],
+  "schema_version": 1,
+  "source": {
+    "kind": "manual",
+    "ingested_by": null,
+    "_source.ingested_by": "Your name. ingested_at is stamped by the upload step (MUFF-58) — leave it null.",
+    "ingested_at": null,
+    "notes": ""
+  },
+  "league": null,
+  "_source.league": "Yahoo → league home → title bar (league name).",
+  "season": null,
+  "_source.season": "4-digit season, e.g. \"2026\".",
+  "week": null,
+  "_source.week": "The week being recapped (last completed week), not Yahoo's current week.",
+
+  "matchups": [
+    {
+      "_source": "Yahoo → League → Scoreboard → pick Week N. One block per matchup (6 for 12 teams). Team names EXACTLY as Yahoo shows them.",
+      "teams": [
+        {
+          "team": null,
+          "points": null,
+          "_source.points": "Final team total on the scoreboard card, 2 decimals.",
+          "projected": null,
+          "_source.projected": "Yahoo's projected total if still shown; null if not."
+        },
+        {
+          "team": null,
+          "points": null,
+          "projected": null
+        }
+      ]
+    }
+  ],
+
+  "standings": [
+    {
+      "_source": "Yahoo → League → Standings. One row per team, top to bottom. 12 rows for 12 teams.",
+      "rank": null,
+      "team": null,
+      "manager": null,
+      "_source.manager": "Optional first name (team page or the league's manager list). Used for the personal touch.",
+      "wins": null,
+      "losses": null,
+      "ties": 0,
+      "_source.record": "The W-L-T column, split into three integers.",
+      "points_for": null,
+      "_source.points_for": "The Pts For column (season total, 2 decimals).",
+      "streak": null,
+      "_source.streak": "The Streak column as shown, e.g. \"W2\" / \"L1\"; null if blank."
+    }
+  ],
+
+  "transactions": [
+    {
+      "_source": "Yahoo → League → Transactions, newest first, since last Tuesday. Up to 5 is plenty. Leave the array empty ([]) for a quiet week.",
+      "type": null,
+      "_source.type": "One of: add, drop, add/drop, trade, commish.",
+      "date": null,
+      "_source.date": "YYYY-MM-DD.",
+      "players": [
+        {
+          "name": null,
+          "position": null,
+          "action": null,
+          "_source.action": "add | drop | trade.",
+          "from": null,
+          "to": null,
+          "_source.from_to": "Team name, \"FA\" (free agents) or \"W\" (waivers). Null if the row doesn't say."
+        }
+      ]
+    }
+  ],
+
+  "bench_points": [
+    {
+      "_source": "OPTIONAL. Yahoo → Scoreboard → open a matchup → bench section: sum each team's bench points. Do all teams or none.",
+      "team": null,
+      "bench_points": null
+    }
+  ],
+
+  "start_sit": [
+    {
+      "_source": "OPTIONAL. While on the matchup page: a benched player who outscored a starter he could have replaced (position must fit the slot). Delta and would-it-have-flipped are computed.",
+      "team": null,
+      "benched": { "name": null, "position": null, "points": null },
+      "started": { "name": null, "slot": null, "points": null },
+      "_source.slot": "The starter's lineup slot as Yahoo labels it: QB, WR, RB, TE, W/R/T, K, DEF."
+    }
+  ]
+}
