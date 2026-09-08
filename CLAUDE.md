@@ -18,6 +18,7 @@ npm run mcp:http       # exact Lambda code path, locally on :3939
 npm run agent          # interactive agent REPL (Agent SDK)
 npm run digest         # Tuesday digest; -- --week N for a specific week, -- --send to deliver
 npm run eval           # score fixtures/golden set; -- --live also runs the real model
+npm run fixture:validate <path>  # manual weekly fixture: schema + cross-checks + derived facts; -- --prev <last week> for exact deltas
 npm run runs           # browse the digest run archive; -- --pull copies records to data/runs/
 npm run auth           # Yahoo OAuth bootstrap (writes .tokens.json)
 npm run deploy         # MCP server → Lambda + API Gateway (idempotent)
@@ -41,7 +42,7 @@ Three consumers sit on one provider-blind data layer:
 - **Provider seam — `src/mcp/data.ts`** is the *only* file that knows two fantasy backends exist. `FANTASY_PROVIDER=yahoo|sleeper` picks `yahoo-data.ts` or `sleeper-data.ts` at startup; the re-export is typed `typeof yahoo`, so the Yahoo module's signatures ARE the provider contract and the compiler proves Sleeper implements it. Everything above this file (tools, digest, evals) must stay provider-blind — never import `yahoo-data`/`sleeper-data` directly from consumers.
 - **MCP server** — `src/mcp/build-server.ts` defines five read-only tools (`get_roster`, `get_matchup`, `get_standings`, `get_transactions`, `get_week_results`) shared by two transports: stdio (`server.ts`) and stateless Streamable HTTP on Lambda behind API Gateway (`lambda.ts` + `http.ts`, static bearer token, sessions disabled, JSON response mode). Tool contracts live in `docs/mcp-tools.md`. Claude Code itself connects to the stdio server through the committed project-scope `.mcp.json` (`${VAR:-default}` expansion, no literals; each user approves it once) — see the "Connecting from Claude Code" section of that doc before adding env keys there, because `.mcp.json` `env` beats `--env-file=.env`.
 - **Interactive agent** — `src/agent/` on the Claude Agent SDK; the MCP server is its entire tool surface (all built-ins disallowed, which is what makes `bypassPermissions` safe — revisit if write tools ever appear). `pickModel()` tiers Haiku/Sonnet as a cost lever, not a router. `src/telegram/bot.ts` fronts it.
-- **Digest** — `src/digest/` is deliberately a *workflow*, not an agent: `facts.ts` computes every number deterministically in code, `generate.ts` makes ONE Opus call with zod-schema-enforced output, `render.ts` does layout in code. It imports the data layer directly, not through MCP — MCP is a process boundary for agents; same-repo code calling functions doesn't need the protocol hop.
+- **Digest** — `src/digest/` is deliberately a *workflow*, not an agent: `facts.ts` computes every number deterministically in code, `generate.ts` makes ONE Opus call with zod-schema-enforced output, `render.ts` does layout in code. It imports the data layer directly, not through MCP — MCP is a process boundary for agents; same-repo code calling functions doesn't need the protocol hop. `facts.ts` is fetch (`gatherWeekFacts`) + pure derive (`deriveWeekFacts`); the manual ingestion path (`src/ingest/`, `fixtures/weekly/`, `docs/ingestion-checklist.md`) feeds hand-transcribed raw inputs into the same derive while the Yahoo API is blocked.
 
 Cross-cutting invariants:
 
@@ -54,4 +55,4 @@ Cross-cutting invariants:
 
 ## Docs are the source of truth for design intent
 
-Each subsystem has a design doc recording decisions and their reasoning: `docs/mcp-tools.md`, `docs/agent-design.md`, `docs/digest-design.md`, `docs/deploy.md`, `docs/observability.md`, `docs/sleeper-spike.md`, `docs/adr/`. When a change alters a documented decision, update the doc in the same change.
+Each subsystem has a design doc recording decisions and their reasoning: `docs/mcp-tools.md`, `docs/agent-design.md`, `docs/digest-design.md`, `docs/deploy.md`, `docs/observability.md`, `docs/sleeper-spike.md`, `docs/ingestion-checklist.md`, `docs/adr/`. When a change alters a documented decision, update the doc in the same change.

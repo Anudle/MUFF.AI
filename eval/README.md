@@ -16,6 +16,12 @@ computed from the raw score tables, not typed by hand — the fixtures are
 internally consistent, so a groundedness failure against them is always the
 digest's fault, never the fixture's.
 
+Not to be confused with `fixtures/weekly/` (MUFF-57): those are *raw* weekly
+inputs a human transcribes from Yahoo, which `deriveWeekFacts()` turns into a
+`WeekFacts` blob of exactly this shape — `npm run fixture:validate <path> -- --facts out.json`
+produces one, and `fixtures/weekly/2025-w01.example.json` derives byte-for-byte
+into `2025-w01-blowout.json`.
+
 **`golden/`** — real archived run records promoted to permanent test cases.
 Empty until the season produces them; `npm run runs -- --pull` fetches
 candidates into `data/runs/`, and the keepers get copied here.
