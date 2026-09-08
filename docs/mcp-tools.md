@@ -1,8 +1,9 @@
 # MUFF.ai MCP server — tool schemas (MUFF-15)
 
-Server: `muff-yahoo-fantasy` v0.1.0 · stdio transport · `npm run mcp`
-Five read-only tools wrapping the Yahoo Fantasy Sports API on top of the
-MUFF-11 auth layer (auto-refreshing OAuth tokens in `.tokens.json`).
+Server: `muff-<provider>-fantasy` v0.2.0 · stdio transport · `npm run mcp` (or
+`.mcp.json`, below) · HTTP twin on Lambda (`docs/deploy.md`)
+Five read-only tools over the provider-blind data layer (`src/mcp/data.ts`:
+Yahoo behind the MUFF-11 auto-refreshing OAuth layer, or Sleeper, no auth).
 
 ## Design decisions
 
@@ -83,6 +84,58 @@ Every matchup in the league for one week (the digest's primary source).
 stdio with the SDK's MCP client: lists tools, calls all five against the 2025
 Monarch United league, and asserts the `WEEK_NOT_AVAILABLE` error path.
 Interactive alternative: `npx @modelcontextprotocol/inspector npm run mcp`.
+
+## Connecting from Claude Code (MUFF-55)
+
+Claude Code reads MCP server definitions from three scopes, highest
+precedence first: **local** (`~/.claude.json`, keyed by project path — private
+to one person on one machine), **project** (`.mcp.json` at the repo root,
+committed — the team's shared servers), **user** (`~/.claude.json` top-level
+`mcpServers` — one person's servers across all their projects). Same name in
+two scopes: the higher one wins whole, fields are not merged.
+
+**MUFF lives in `.mcp.json` (project scope).** Anyone who clones the repo gets
+the server on first launch; Claude Code asks them to approve it once because a
+checked-in file can start processes (the approval is recorded per user in
+`enabledMcpjsonServers`, never in the repo). The Yahoo/Telegram secrets stay in
+the gitignored `.env`, loaded by `--env-file` — `.mcp.json` carries no literal
+credential or league id, only `${VAR:-default}` references:
+
+```jsonc
+"args": ["--env-file=${MUFF_ENV_FILE:-.env}", "--experimental-strip-types", "src/mcp/server.ts"],
+"env":  { "YAHOO_LEAGUE_KEY": "${YAHOO_LEAGUE_KEY:-}" }
+```
+
+Two rules that fell out of building this, both verified on 2026-09-04:
+
+- **A stdio server inherits Claude Code's whole environment.** Exporting
+  `FANTASY_PROVIDER=sleeper SLEEPER_LEAGUE_ID=…` in the shell before `claude`
+  flips the provider with no config change; `env` in `.mcp.json` is only for
+  explicit overrides and expansions.
+- **`env` beats `--env-file`, even when the value is empty.** Node's
+  `--env-file` never overrides a variable already present in the process
+  environment, and `${VAR:-}` expands to `""`, which counts as present. So a
+  key belongs in `.mcp.json` `env` only if `.env` never sets it —
+  `YAHOO_LEAGUE_KEY` qualifies (optional, empty means auto-resolve);
+  `FANTASY_PROVIDER` or `SLEEPER_LEAGUE_ID` would silently shadow `.env`.
+
+A missing `${VAR}` with no `:-default` doesn't fail the load — Claude Code
+warns in `claude mcp list` and passes the literal `${VAR}` text through, which
+is worse than failing. Always give a default.
+
+**Why the descriptions matter here.** Once connected, the five tools compete
+with Claude Code's built-ins (Read, Grep, Bash) for the model's attention.
+Verified 2026-09-04: a fresh `claude -p "who's top of the standings?"` session
+with both scopes loaded went straight to `get_standings` and never touched the
+filesystem, on both providers. That is the descriptions doing their job — each
+says what the data *is*, when to use it, and which sibling to use instead.
+`claude mcp get muff-fantasy` shows scope and status; `claude mcp list` shows
+every scope at once.
+
+**Follow-up (MUFF-56):** a `league_summary` MCP *resource*. Tools are
+model-controlled actions; resources are application-controlled context
+(league name, season, current week, my team) that the client can attach up
+front. Today that context costs a full `get_standings` payload per session.
 
 ## v2 (deliberately out of scope)
 

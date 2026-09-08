@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "muff-fantasy": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "--env-file=${MUFF_ENV_FILE:-.env}",
+        "--experimental-strip-types",
+        "src/mcp/server.ts"
+      ],
+      "env": {
+        "YAHOO_LEAGUE_KEY": "${YAHOO_LEAGUE_KEY:-}"
+      }
+    }
+  }
+}
