@@ -77,7 +77,22 @@ npm run fixture:validate fixtures/weekly/2026-w03.json -- --prev fixtures/weekly
 Pass `--prev` whenever last week's fixture exists: it turns the record and
 `points_for` checks from "plausible" into "exact". Read the *Derived facts* block
 it prints — if the high scorer or the closest game isn't who you remember, a score
-is mistyped. Fix and re-run until `Valid.` Then hand off to the upload step (MUFF-58).
+is mistyped. Fix and re-run until `Valid.`
+
+## 4b. Upload (10 s)
+
+```bash
+HISTORY_BUCKET=muff-digest-history-<account-id> npm run fixture:upload fixtures/weekly/2026-w03.json
+```
+
+This re-runs the validator (schema + checks, with last week pulled from the
+bucket automatically, so `--prev` is implicit from week 2 on), stamps
+`source.ingested_at` in the file and in S3, and writes
+`s3://<bucket>/fixtures/weekly/2026-w03.json` — the key the digest Lambda
+derives from the season and week when `FANTASY_PROVIDER=fixture`. Any error
+refuses the upload before touching S3. Re-uploading a corrected week needs
+`--force`. Commit the stamped file. Without `HISTORY_BUCKET` the same command
+writes to `data/` for a local `FANTASY_PROVIDER=fixture npm run digest`.
 
 **Required fields end here.** Steps 1–3 cover every field the schema demands.
 

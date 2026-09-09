@@ -3,7 +3,10 @@
 Server: `muff-<provider>-fantasy` v0.2.0 · stdio transport · `npm run mcp` (or
 `.mcp.json`, below) · HTTP twin on Lambda (`docs/deploy.md`)
 Five read-only tools over the provider-blind data layer (`src/mcp/data.ts`:
-Yahoo behind the MUFF-11 auto-refreshing OAuth layer, or Sleeper, no auth).
+Yahoo behind the MUFF-11 auto-refreshing OAuth layer, Sleeper with no auth, or
+`fixture` — hand-transcribed weeks from the blob store, MUFF-58 degraded mode,
+where `get_roster` / `get_matchup` return `LEAGUE_NOT_FOUND` with do-not-retry
+guidance because a fixture has no full rosters and no "my team").
 
 ## Design decisions
 

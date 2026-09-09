@@ -89,6 +89,52 @@ Two decisions:
   `npm run fixture:validate` catch a transcription slip. `--prev <last week>`
   makes those checks exact. Derived numbers typed by hand have no witness.
 
+### Getting the fixture to the Lambda (MUFF-58)
+
+The fixture is a **provider**, not a special case. `FANTASY_PROVIDER=fixture`
+selects `src/mcp/fixture-data.ts`, which implements the same contract as the
+Yahoo and Sleeper modules (the compiler checks it, via `typeof yahoo` in
+`data.ts`) by reading hand-transcribed weeks from the blob store. Nothing in
+`facts.ts`, `run.ts` or the Lambda knows the difference — that is the
+"no code changes downstream" acceptance criterion, and the reason a
+human-in-the-loop source lives behind the seam instead of an `if` in the
+digest. Manual mode is a named value, never a fallthrough: an unrecognised
+`FANTASY_PROVIDER` still means Yahoo.
+
+- **Key convention** — `fixtures/weekly/<season>-wNN.json` in the one blob
+  bucket (`HISTORY_BUCKET`; `data/` locally), mirroring the repo's own
+  `fixtures/weekly/`. The key is a pure function of (season, week), so the
+  Lambda derives it. There is deliberately **no "latest" pointer** to keep in
+  sync: zero-padded weeks make a sorted listing chronological (the run archive
+  uses the same trick), so the newest key *is* the latest completed week, and
+  `current_week` is reported as latest+1 so `gatherWeekFacts()`'s
+  "last completed week" arithmetic lands on it unchanged. `FIXTURE_SEASON`
+  pins a season; otherwise the newest season present wins.
+- **Upload is the gate** — `npm run fixture:upload <path>` runs the MUFF-57
+  validator in-process (schema, then cross-field checks against last week's
+  fixture *fetched from the same store*, so exact deltas are checked without
+  remembering `--prev`), refuses on any error before touching S3, refuses to
+  overwrite an existing week without `--force`, and stamps
+  `source.ingested_at` into both the uploaded object and the local file so the
+  committed copy matches what the Lambda read.
+- **Provenance** — every `WeekFacts` now carries
+  `provenance: { source, ingested_by, ingested_at }` (`source` is
+  `yahoo`/`sleeper` for API weeks, `manual` for fixtures, `synthetic` for eval
+  fixtures). It rides into the run archive and the `MUFF_RUN` log line, and is
+  **stripped before the model sees the facts** and skipped by the
+  groundedness checker — the league must not be able to tell a transcribed
+  week from an API week, and an ISO timestamp is a bag of numbers the model
+  must not be tempted to cite. Why the extra field is worth it: without it a
+  season's run archive is a set of digests with no way to say which weeks were
+  API-sourced and which were typed by a human at 7am — so a quality dip in the
+  evals, or a cost difference, could not be attributed; and once Yahoo access
+  returns, nothing would flag which archived weeks are the ones whose only
+  validation was the transcriber's eyes.
+- **Deploy-time switch** — `deploy-digest.sh` passes `FANTASY_PROVIDER` from
+  `.env` (default `yahoo`) and grants the Lambda `GetObject` on `fixtures/*`
+  plus a prefix-scoped `ListBucket`. Flipping mode is a redeploy, not a
+  runtime condition, so a Tuesday never silently changes source.
+
 What the human types is kept to what Yahoo shows on three screens (standings,
 scoreboard, transactions); rosters are cut to an optional bench total and one
 optional start/sit pair per team, from which the derive still computes the

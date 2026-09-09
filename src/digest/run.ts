@@ -13,6 +13,7 @@
 
 import { archiveRun } from "./archive.ts";
 import type { RunCost } from "./cost.ts";
+import type { Provenance } from "../mcp/provider.ts";
 import { gatherWeekFacts } from "./facts.ts";
 import { generateDigest } from "./generate.ts";
 import { savePowerRankings } from "./history.ts";
@@ -28,6 +29,8 @@ export interface DigestRunResult {
   duration_ms: number;
   /** Archive key, or null if the archive write failed (non-fatal). */
   archived: string | null;
+  /** Where the week's numbers came from (MUFF-58) — surfaced for the log line. */
+  provenance: Provenance;
 }
 
 export async function runDigest(opts: {
@@ -91,5 +94,6 @@ export async function runDigest(opts: {
     cost,
     duration_ms: durationMs,
     archived,
+    provenance: facts.provenance,
   };
 }

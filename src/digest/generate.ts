@@ -69,6 +69,10 @@ export interface GeneratedDigest {
 
 export async function generateDigest(facts: WeekFacts): Promise<GeneratedDigest> {
   const client = new Anthropic();
+  // Provenance (MUFF-58) is for the archive and the log, not the prose: the
+  // league must not be able to tell a transcribed week from an API week, and
+  // a timestamp is a bag of numbers the model must not be tempted to cite.
+  const { provenance: _provenance, ...cited } = facts;
   const response = await client.messages.parse({
     model: MODEL,
     max_tokens: 16000,
@@ -76,7 +80,7 @@ export async function generateDigest(facts: WeekFacts): Promise<GeneratedDigest>
     messages: [
       {
         role: "user",
-        content: `Facts for ${facts.league}, week ${facts.week} (${facts.season} season):\n\n${JSON.stringify(facts, null, 1)}`,
+        content: `Facts for ${facts.league}, week ${facts.week} (${facts.season} season):\n\n${JSON.stringify(cited, null, 1)}`,
       },
     ],
     output_config: { format: zodOutputFormat(DigestSchema) },
