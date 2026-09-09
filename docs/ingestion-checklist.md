@@ -28,7 +28,7 @@ after the league id is the stable part.
 
 ## 1. Standings — `…/standings` (3 min)
 
-One screen, one row per team, top to bottom. Twelve rows for twelve teams.
+One screen, one row per team, top to bottom. Fourteen rows for fourteen teams.
 
 | Fixture field | Yahoo column |
 |---|---|
@@ -42,8 +42,8 @@ One screen, one row per team, top to bottom. Twelve rows for twelve teams.
 ## 2. Scoreboard — `…/scoreboard?week=N` (3 min)
 
 Pick the recap week in the week selector (it defaults to the *current* week —
-check the header says the week you want). One `matchups` block per card; six for
-twelve teams.
+check the header says the week you want). One `matchups` block per card; seven for
+fourteen teams.
 
 | Fixture field | Yahoo |
 |---|---|
@@ -103,12 +103,35 @@ writes to `data/` for a local `FANTASY_PROVIDER=fixture npm run digest`.
 (click the team name) or in League → Members. Fill it once in week 1 and copy the
 column forward; the validator accepts null.
 
+2026 teams, from the Sept 9 standings page. Team strings are exact, emoji
+included — copy from here, not from memory:
+
+| Team (exactly as Yahoo shows it) | `manager` |
+|---|---|
+| Garipp Bowls | Phi |
+| Calvins Cutthroats | Dan |
+| Cow Bellz | Kyle B |
+| The Baker Mayfields | Barry |
+| Anubis | Anu |
+| JustBoxes | Kyle F |
+| LUCAS'S LUCKY LIONS | Lucas |
+| Leapfrog Clause | Matt |
+| This One's for John | David |
+| Super Mega Awesome ✨ | Jason |
+| TN Gamblers | Trin |
+| Tuten Under the Covers | Kev |
+| O-moss-em | Michael |
+| Tebow's Purity Ring | Ankit |
+
+Two Kyles, hence the initials. Full names stay with the league, not in the
+repo — the digest only ever needs a first name.
+
 ## 6. Optional: bench totals + start/sit blunder (5–6 min)
 
 From the scoreboard, open each matchup card. The full-roster view lists starters
 then a **Bench** section with per-player points.
 
-- `bench_points[]`: sum the bench column per team. Do all twelve or none — a
+- `bench_points[]`: sum the bench column per team. Do all fourteen or none — a
   partial list gives the digest a bench ranking that is missing people (the
   validator warns).
 - `start_sit[]`: while you're there, note the one obvious blunder — a benched
@@ -124,7 +147,7 @@ same as the Sleeper provider omits projection facts.
 
 | Cut | Why |
 |---|---|
-| Full rosters (every player, slot, points) | ~150 cells for twelve teams — the entire time budget, for two facts (bench points, worst start/sit) that step 6 recovers in a fraction of the cells |
+| Full rosters (every player, slot, points) | ~175 cells for fourteen teams — the entire time budget, for two facts (bench points, worst start/sit) that step 6 recovers in a fraction of the cells |
 | `points_against` | Fetched on the API path, never used by a fact |
 | Transaction `status` | Yahoo's page only lists completed moves; the value is always "successful" |
 | Winner / margin / superlatives / deltas | Derived — see the failure-mode section |
