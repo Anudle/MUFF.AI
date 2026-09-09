@@ -102,8 +102,9 @@ EventBridge Scheduler  muff-digest-tuesday
 muff-digest            (nodejs22.x, 512 MB, 300 s timeout)
   src/digest/lambda.ts — {} = last completed week + deliver; {"dry_run":true} for tests
   src/digest/run.ts    — gather → generate → render → persist → send (shared with the CLI)
-      ├── Secrets Manager: muff/yahoo-tokens   (same secret as the MCP server)
+      ├── Secrets Manager: muff/yahoo-tokens   (same secret as the MCP server; yahoo mode)
       ├── S3: muff-digest-history-<acct>/digest-history.json  (power-ranking history)
+      ├── S3: …/fixtures/weekly/<season>-wNN.json  (FANTASY_PROVIDER=fixture: hand-transcribed weeks, MUFF-58)
       ├── Anthropic API   (structured-output digest generation — bills API credits)
       └── Telegram Bot API → TELEGRAM_CHAT_ID
 ```
@@ -124,6 +125,14 @@ the digest reads the MCP deploy's tokens secret). Notes:
   a missed Tuesday shows as a failed invocation in CloudWatch
   (`aws logs tail /aws/lambda/muff-digest --region us-east-2`).
 - The rendered digest is logged on every run — cheap audit trail.
+- **Degraded mode (MUFF-58)**: `FANTASY_PROVIDER=fixture` in `.env` +
+  `npm run deploy:digest` makes the Lambda read hand-transcribed weeks from
+  the bucket instead of Yahoo. Put them there with
+  `HISTORY_BUCKET=muff-digest-history-<acct> npm run fixture:upload fixtures/weekly/<season>-wNN.json`
+  (validates, stamps provenance, refuses bad or duplicate weeks). The deploy
+  grants `GetObject` on `fixtures/*` and a prefix-scoped `ListBucket`; the
+  `MUFF_RUN` log line carries `source: "manual"` for those weeks. Switch back
+  by setting `FANTASY_PROVIDER=yahoo` (or removing it) and redeploying.
 
 ## The daily players sync (MUFF-49 step 3)
 

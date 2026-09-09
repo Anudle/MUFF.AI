@@ -33,6 +33,24 @@ import { deriveWeekFacts, type WeekFacts, type WeekInputs } from "../digest/fact
 
 export const FIXTURE_SCHEMA_VERSION = 1;
 
+/**
+ * MUFF-58 — where uploaded fixtures live in the blob store (src/store.ts):
+ * `fixtures/weekly/<season>-wNN.json`, the repo's own layout mirrored into
+ * data/ locally and HISTORY_BUCKET on Lambda. The key is a pure function of
+ * (season, week), so the digest derives it instead of reading a pointer.
+ */
+export const FIXTURES_PREFIX = "fixtures/weekly";
+
+export function fixtureKey(season: string, week: number): string {
+  return `${FIXTURES_PREFIX}/${season}-w${String(week).padStart(2, "0")}.json`;
+}
+
+/** Inverse of fixtureKey; null for keys that aren't weekly fixtures (e.g. TEMPLATE.json). */
+export function parseFixtureKey(key: string): { season: string; week: number } | null {
+  const m = /(\d{4})-w(\d{2})\.json$/.exec(key);
+  return m ? { season: m[1], week: Number(m[2]) } : null;
+}
+
 const name = z.string().trim().min(1);
 const points = z.number().finite().min(0);
 const count = z.number().int().min(0);
@@ -377,6 +395,7 @@ export function toWeekInputs(
       teams: [...rosterTeams].map(([team, players]) => ({ team, manager: manager(team), players })),
     },
     previous_power_rankings: previousPowerRankings,
+    provenance: { source: f.source.kind, ingested_by: f.source.ingested_by, ingested_at: f.source.ingested_at },
   };
 }
 

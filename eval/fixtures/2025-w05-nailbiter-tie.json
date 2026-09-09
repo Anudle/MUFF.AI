@@ -2,6 +2,11 @@
  "league": "Monarch United (synthetic)",
  "season": "2025",
  "week": 5,
+ "provenance": {
+  "source": "synthetic",
+  "ingested_by": null,
+  "ingested_at": null
+ },
  "results": [
   {
    "winner": "Anubis",

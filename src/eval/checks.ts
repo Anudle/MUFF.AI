@@ -66,7 +66,10 @@ export function collectFactNumbers(facts: WeekFacts): Set<number> {
     else if (Array.isArray(v)) v.forEach(walk);
     else if (v && typeof v === "object") Object.values(v).forEach(walk);
   };
-  walk(facts);
+  // Provenance is metadata the model never sees (generate.ts strips it), so
+  // its timestamp digits must not widen what counts as a grounded number.
+  const { provenance: _provenance, ...cited } = facts;
+  walk(cited);
   return allowed;
 }
 

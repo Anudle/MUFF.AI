@@ -45,10 +45,16 @@ meant to be read in order by a `sort()` and nothing more clever.
 S3 round-trip to answer "what has this cost me":
 
 ```
-fields @timestamp, week, cost_usd, duration_ms, delivered
+fields @timestamp, week, source, cost_usd, duration_ms, delivered
 | filter tag = "MUFF_RUN"
 | sort @timestamp asc
 ```
+
+`source` (MUFF-58) is `yahoo`, `sleeper` or `manual` — the same value as
+`facts.provenance.source` in the archived record — so a season's cost or
+quality query can split API weeks from hand-transcribed degraded-mode weeks
+(`ingested_by` names the transcriber). The model never sees provenance and the
+groundedness checker ignores it.
 
 They overlap deliberately. If an S3 write fails the cost number still lands in
 logs, and vice versa — and archiving is explicitly non-fatal, because a failed

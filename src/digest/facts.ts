@@ -17,11 +17,13 @@
 
 import {
   getLeagueRosters,
+  getProvenance,
   getStandings,
   getTransactions,
   getWeekResults,
   resolveLeague,
 } from "../mcp/data.ts";
+import type { Provenance } from "../mcp/provider.ts";
 import { loadPowerRankings } from "./history.ts";
 
 // Slots that score points. Everything else (BN, IR) rides the pine.
@@ -79,6 +81,12 @@ export interface WeekFacts {
   recent_transactions: { type: string | null; date: string | null; summary: string }[];
   /** The power rankings PUBLISHED in last week's digest (null in week 1 / cold start). */
   previous_power_rankings: { rank: number; team: string }[] | null;
+  /**
+   * MUFF-58: where these numbers came from (API vs. hand-transcribed).
+   * Archived with the run and logged; stripped before the model sees the
+   * facts (generate.ts) and ignored by the groundedness checker.
+   */
+  provenance: Provenance;
 }
 
 /** The four provider payloads (plus last week's published rankings) that every fact derives from. */
@@ -88,6 +96,7 @@ export interface WeekInputs {
   transactions: Awaited<ReturnType<typeof getTransactions>>;
   rosters: Awaited<ReturnType<typeof getLeagueRosters>>;
   previous_power_rankings: WeekFacts["previous_power_rankings"];
+  provenance: Provenance;
 }
 
 export async function gatherWeekFacts(week?: number): Promise<WeekFacts> {
@@ -106,6 +115,7 @@ export async function gatherWeekFacts(week?: number): Promise<WeekFacts> {
     transactions: await getTransactions(15),
     rosters: await getLeagueRosters(w),
     previous_power_rankings: await loadPowerRankings(results.season, w - 1),
+    provenance: await getProvenance(w),
   });
 }
 
@@ -216,6 +226,7 @@ export function deriveWeekFacts(w: number, inputs: WeekInputs): WeekFacts {
       streak: s.streak,
     })),
     previous_power_rankings: inputs.previous_power_rankings,
+    provenance: inputs.provenance,
     recent_transactions: transactions.transactions.slice(0, 10).map((t) => ({
       type: t.type,
       date: t.date,

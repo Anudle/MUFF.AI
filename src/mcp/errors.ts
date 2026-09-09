@@ -91,6 +91,11 @@ export function toToolError<T = never>(e: unknown): ToolResult<T> {
   if (message.includes("SLEEPER_LEAGUE_ID") || message.includes("SLEEPER_USERNAME")) {
     return err("LEAGUE_NOT_FOUND", message);
   }
+  // Fixture-mode refusals (MUFF-58) and missing-fixture errors already say
+  // "do not retry"; don't wrap them in retry advice.
+  if (message.includes("fixture mode") || message.includes("fixture:upload")) {
+    return err("LEAGUE_NOT_FOUND", message);
+  }
   if (message.includes("No .tokens.json") || message.includes("npm run auth")) {
     return err(
       "AUTH_EXPIRED",

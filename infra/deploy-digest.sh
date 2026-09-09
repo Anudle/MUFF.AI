@@ -64,8 +64,10 @@ npx esbuild src/digest/lambda.ts --bundle --platform=node --format=esm --target=
 echo "    $(du -h "$BUNDLE_DIR/function.zip" | cut -f1) zipped"
 
 # --- S3: history bucket, private, seeded once --------------------------------
-# Two things live here: digest-history.json (power rankings, read+written every
-# run) and runs/ (MUFF-16 archive, one immutable record per run).
+# Three things live here: digest-history.json (power rankings, read+written
+# every run), runs/ (MUFF-16 archive, one immutable record per run) and
+# fixtures/weekly/ (MUFF-58 hand-transcribed weeks, written by
+# `npm run fixture:upload`, read when FANTASY_PROVIDER=fixture).
 if ! aws s3api head-bucket --bucket "$BUCKET" >/dev/null 2>&1; then
   echo "==> Creating bucket $BUCKET"
   aws s3api create-bucket --bucket "$BUCKET" --region "$REGION" \
@@ -109,7 +111,14 @@ aws iam put-role-policy --role-name "$ROLE" --policy-name "$POLICY_NAME" \
        "Action": ["s3:GetObject", "s3:PutObject"],
        "Resource": ["arn:aws:s3:::'"$BUCKET"'/'"$HISTORY_KEY"'",
                     "arn:aws:s3:::'"$BUCKET"'/runs/*",
-                    "arn:aws:s3:::'"$BUCKET"'/players/*"]}
+                    "arn:aws:s3:::'"$BUCKET"'/players/*"]},
+      {"Effect": "Allow",
+       "Action": "s3:GetObject",
+       "Resource": "arn:aws:s3:::'"$BUCKET"'/fixtures/*"},
+      {"Effect": "Allow",
+       "Action": "s3:ListBucket",
+       "Resource": "arn:aws:s3:::'"$BUCKET"'",
+       "Condition": {"StringLike": {"s3:prefix": "fixtures/*"}}}
     ]
   }'
 ROLE_ARN="$(aws iam get-role --role-name "$ROLE" --query Role.Arn --output text)"
@@ -121,10 +130,20 @@ fi
 # --- Lambda ------------------------------------------------------------------
 # Timeout 300s: an Opus structured-output call plus Yahoo fan-out is slow-ish;
 # the schedule only fires once a week, so generous beats flaky.
-ENV_JSON="$(TOKENS_SECRET_ID="$SECRET" HISTORY_BUCKET="$BUCKET" \
+#
+# FANTASY_PROVIDER (MUFF-58): `yahoo` (default) or `fixture` — the manual
+# degraded mode that reads fixtures/weekly/ from the bucket. Set it in .env
+# and redeploy to flip; it's a deploy-time decision, on purpose, so a Tuesday
+# never silently switches sources.
+FANTASY_PROVIDER="$(get_env FANTASY_PROVIDER)"
+FANTASY_PROVIDER="${FANTASY_PROVIDER:-yahoo}"
+case "$FANTASY_PROVIDER" in yahoo|fixture) ;; *)
+  echo "❌ FANTASY_PROVIDER=$FANTASY_PROVIDER — the digest Lambda supports yahoo or fixture"; exit 1;; esac
+echo "==> Provider: $FANTASY_PROVIDER"
+ENV_JSON="$(TOKENS_SECRET_ID="$SECRET" HISTORY_BUCKET="$BUCKET" FANTASY_PROVIDER="$FANTASY_PROVIDER" \
   ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" \
   TELEGRAM_CHAT_ID="$TELEGRAM_CHAT_ID" \
-  node -e 'const p = ["TOKENS_SECRET_ID","HISTORY_BUCKET","ANTHROPIC_API_KEY","TELEGRAM_BOT_TOKEN","TELEGRAM_CHAT_ID"];
+  node -e 'const p = ["TOKENS_SECRET_ID","HISTORY_BUCKET","FANTASY_PROVIDER","ANTHROPIC_API_KEY","TELEGRAM_BOT_TOKEN","TELEGRAM_CHAT_ID"];
     console.log(JSON.stringify({Variables: Object.fromEntries(p.map(k => [k, process.env[k]]))}))')"
 
 if aws lambda get-function --function-name "$FUNC" --region "$REGION" >/dev/null 2>&1; then
@@ -192,7 +211,11 @@ fi
 
 echo
 echo "✅ Digest deployed."
+echo "   Provider: $FANTASY_PROVIDER"
 echo "   Schedule: $CRON $TZ_NAME, $START_DATE → $END_DATE"
+if [[ "$FANTASY_PROVIDER" == fixture ]]; then
+echo "   Upload:   HISTORY_BUCKET=$BUCKET npm run fixture:upload fixtures/weekly/<season>-wNN.json"
+fi
 echo "   Dry run:  aws lambda invoke --function-name $FUNC --region $REGION \\"
 echo "               --cli-read-timeout 320 --payload '{\"dry_run\": true}' \\"
 echo "               --cli-binary-format raw-in-base64-out /tmp/digest-out.json"

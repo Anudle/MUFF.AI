@@ -44,6 +44,10 @@ export async function handler(event: DigestEvent | null | undefined) {
     season: result.season,
     week: result.week,
     delivered: result.sent_to !== null,
+    // MUFF-58: "manual" marks a hand-transcribed week (degraded mode) so a
+    // season's cost/quality queries can split API weeks from fixture weeks.
+    source: result.provenance.source,
+    ingested_by: result.provenance.ingested_by,
     duration_ms: result.duration_ms,
     chars: result.text.length,
     archived: result.archived,

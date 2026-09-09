@@ -4,13 +4,14 @@
     "Copy to fixtures/weekly/<season>-wNN.json, fill every null, then run:",
     "  npm run fixture:validate fixtures/weekly/<season>-wNN.json -- --prev fixtures/weekly/<last week>.json",
     "Keys starting with _ are hints and are ignored by the validator. Click-order checklist: docs/ingestion-checklist.md.",
-    "Type only what Yahoo SHOWS. Margins, superlatives, deltas and the start/sit verdict are computed in code."
+    "Type only what Yahoo SHOWS. Margins, superlatives, deltas and the start/sit verdict are computed in code.",
+    "Then upload: HISTORY_BUCKET=<bucket> npm run fixture:upload fixtures/weekly/<season>-wNN.json (validates again, stamps ingested_at, refuses on any error)."
   ],
   "schema_version": 1,
   "source": {
     "kind": "manual",
     "ingested_by": null,
-    "_source.ingested_by": "Your name. ingested_at is stamped by the upload step (MUFF-58) — leave it null.",
+    "_source.ingested_by": "Your name. ingested_at is stamped by `npm run fixture:upload` (MUFF-58) — leave it null.",
     "ingested_at": null,
     "notes": ""
   },

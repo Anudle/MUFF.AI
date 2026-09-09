@@ -22,6 +22,19 @@ export interface LeagueContext {
   teams: { team_key: string; name: string; manager: string | null }[];
 }
 
+/**
+ * MUFF-58 — where a week's numbers came from. Carried on every WeekFacts so
+ * the run archive, the MUFF_RUN log line and the evals can tell degraded-mode
+ * (hand-transcribed) data from API data. The digest model never sees it.
+ */
+export interface Provenance {
+  source: "yahoo" | "sleeper" | "manual" | "synthetic";
+  /** Who transcribed the week (manual only). */
+  ingested_by: string | null;
+  /** When the upload step stamped it (manual only), ISO 8601. */
+  ingested_at: string | null;
+}
+
 /** Thrown for weeks outside the played range; mapped to WEEK_NOT_AVAILABLE. */
 export class WeekNotAvailableError extends Error {
   constructor(week: number, league: LeagueContext) {
