@@ -35,7 +35,7 @@ One screen, one row per team, top to bottom. Fourteen rows for fourteen teams.
 | `rank` | Rank (the row number) |
 | `team` | Team — copy **exactly**, emoji and apostrophes included; every other screen is matched by this string |
 | `wins` / `losses` / `ties` | W-L-T, split into three integers |
-| `points_for` | Pts For (season total, 2 decimals) |
+| `points_for` | Pts For (season total — a whole number; the league scores without decimals) |
 | `streak` | Streak, as shown: `W2`, `L1` (null if blank) |
 | `manager` | *not on this screen* — optional; see step 5 |
 
@@ -48,8 +48,8 @@ fourteen teams.
 | Fixture field | Yahoo |
 |---|---|
 | `teams[].team` | Team name on the card, exactly as in step 1 |
-| `teams[].points` | The final total under each team |
-| `teams[].projected` | The projected total, if the card still shows one after the games; otherwise `null` |
+| `teams[].points` | The final total under each team — a whole number (league scoring has no decimals) |
+| `teams[].projected` | The projected total, if the card still shows one after the games; otherwise `null`. Projections do show decimals — type them as shown |
 
 Do **not** type the winner, the margin, or who was closest — the derive computes
 those, and the validator checks the winner against the Streak column you typed in
@@ -165,7 +165,7 @@ What the validator catches, and what it can't:
 | A W-L column off by one | league wins ≠ losses, or games ≠ week number → error; exact delta with `--prev` |
 | Score typed under the wrong team | winner no longer matches the Streak letter → error; `points_for` delta wrong with `--prev` |
 | Wrong `points_for` | below this week's score, ≠ score in week 1, or ≠ last week + score with `--prev` → error |
-| Three decimals in a score | warning |
+| Decimals in a score (the league scores whole numbers; only projections carry decimals) | warning only for 3+ decimals today — punch list MUFF-60 tightens this to "any decimal in a score" |
 | Bench total smaller than the benched player's points | error |
 | A score that is wrong but consistent with everything else | **not caught.** With `--prev`, the only way a bad score survives is if `points_for` was mistyped by exactly the same amount. Without `--prev`, a plausible wrong score in week 2+ passes. This is why `--prev` is in the command above and not a footnote. |
 

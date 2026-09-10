@@ -1,6 +1,6 @@
 {
   "_readme": [
-    "MUFF-59 DRY-RUN MOCK — not a real week. Real 2026 team/manager names, invented but internally consistent numbers.",
+    "MUFF-59 DRY-RUN MOCK — not a real week. Real 2026 team/manager names, invented but internally consistent numbers. Scores are whole numbers (league setting); projections keep Yahoo's decimals.",
     "Season is deliberately 2025 so the store key (fixtures/weekly/2025-w01.json) never collides with the real 2026-w01.json;",
     "the fixture provider serves the newest season present, so uploading the real 2026 week 1 supersedes this automatically."
   ],
@@ -8,7 +8,7 @@
   "source": {
     "kind": "manual",
     "ingested_by": "Anu",
-    "ingested_at": "2026-09-10T17:32:27.367Z",
+    "ingested_at": "2026-09-10T17:47:57.925Z",
     "notes": "MUFF-59 dry-run mock (2026-09-10). Synthetic numbers on the real 14-team 2026 league. Do not promote to eval/golden."
   },
   "league": "Monarch United (dry-run mock)",
@@ -19,12 +19,12 @@
       "teams": [
         {
           "team": "Garipp Bowls",
-          "points": 141.22,
+          "points": 141,
           "projected": 119.14
         },
         {
           "team": "Tebow's Purity Ring",
-          "points": 88.16,
+          "points": 88,
           "projected": 119.3
         }
       ]
@@ -33,12 +33,12 @@
       "teams": [
         {
           "team": "Calvins Cutthroats",
-          "points": 118.74,
+          "points": 119,
           "projected": 121.02
         },
         {
           "team": "O-moss-em",
-          "points": 117.38,
+          "points": 118,
           "projected": 108.66
         }
       ]
@@ -47,12 +47,12 @@
       "teams": [
         {
           "team": "Cow Bellz",
-          "points": 109.9,
+          "points": 110,
           "projected": 112.48
         },
         {
           "team": "Tuten Under the Covers",
-          "points": 96.42,
+          "points": 96,
           "projected": 104.9
         }
       ]
@@ -61,12 +61,12 @@
       "teams": [
         {
           "team": "The Baker Mayfields",
-          "points": 127.56,
+          "points": 128,
           "projected": 116.2
         },
         {
           "team": "TN Gamblers",
-          "points": 101.08,
+          "points": 101,
           "projected": 110.74
         }
       ]
@@ -75,12 +75,12 @@
       "teams": [
         {
           "team": "Anubis",
-          "points": 104.3,
+          "points": 104,
           "projected": 113.86
         },
         {
           "team": "Super Mega Awesome ✨",
-          "points": 112.84,
+          "points": 113,
           "projected": 107.52
         }
       ]
@@ -89,12 +89,12 @@
       "teams": [
         {
           "team": "JustBoxes",
-          "points": 93.62,
+          "points": 94,
           "projected": 109.18
         },
         {
           "team": "This One's for John",
-          "points": 121.16,
+          "points": 121,
           "projected": 114.4
         }
       ]
@@ -103,12 +103,12 @@
       "teams": [
         {
           "team": "LUCAS'S LUCKY LIONS",
-          "points": 99.48,
+          "points": 99,
           "projected": 105.3
         },
         {
           "team": "Leapfrog Clause",
-          "points": 95.7,
+          "points": 96,
           "projected": 111.62
         }
       ]
@@ -122,7 +122,7 @@
       "wins": 1,
       "losses": 0,
       "ties": 0,
-      "points_for": 141.22,
+      "points_for": 141,
       "streak": "W1"
     },
     {
@@ -132,7 +132,7 @@
       "wins": 1,
       "losses": 0,
       "ties": 0,
-      "points_for": 127.56,
+      "points_for": 128,
       "streak": "W1"
     },
     {
@@ -142,7 +142,7 @@
       "wins": 1,
       "losses": 0,
       "ties": 0,
-      "points_for": 121.16,
+      "points_for": 121,
       "streak": "W1"
     },
     {
@@ -152,7 +152,7 @@
       "wins": 1,
       "losses": 0,
       "ties": 0,
-      "points_for": 118.74,
+      "points_for": 119,
       "streak": "W1"
     },
     {
@@ -162,7 +162,7 @@
       "wins": 1,
       "losses": 0,
       "ties": 0,
-      "points_for": 112.84,
+      "points_for": 113,
       "streak": "W1"
     },
     {
@@ -172,7 +172,7 @@
       "wins": 1,
       "losses": 0,
       "ties": 0,
-      "points_for": 109.9,
+      "points_for": 110,
       "streak": "W1"
     },
     {
@@ -182,7 +182,7 @@
       "wins": 1,
       "losses": 0,
       "ties": 0,
-      "points_for": 99.48,
+      "points_for": 99,
       "streak": "W1"
     },
     {
@@ -192,7 +192,7 @@
       "wins": 0,
       "losses": 1,
       "ties": 0,
-      "points_for": 117.38,
+      "points_for": 118,
       "streak": "L1"
     },
     {
@@ -202,7 +202,7 @@
       "wins": 0,
       "losses": 1,
       "ties": 0,
-      "points_for": 104.3,
+      "points_for": 104,
       "streak": "L1"
     },
     {
@@ -212,7 +212,7 @@
       "wins": 0,
       "losses": 1,
       "ties": 0,
-      "points_for": 101.08,
+      "points_for": 101,
       "streak": "L1"
     },
     {
@@ -222,7 +222,7 @@
       "wins": 0,
       "losses": 1,
       "ties": 0,
-      "points_for": 96.42,
+      "points_for": 96,
       "streak": "L1"
     },
     {
@@ -232,7 +232,7 @@
       "wins": 0,
       "losses": 1,
       "ties": 0,
-      "points_for": 95.7,
+      "points_for": 96,
       "streak": "L1"
     },
     {
@@ -242,7 +242,7 @@
       "wins": 0,
       "losses": 1,
       "ties": 0,
-      "points_for": 93.62,
+      "points_for": 94,
       "streak": "L1"
     },
     {
@@ -252,7 +252,7 @@
       "wins": 0,
       "losses": 1,
       "ties": 0,
-      "points_for": 88.16,
+      "points_for": 88,
       "streak": "L1"
     }
   ],
@@ -334,59 +334,59 @@
   "bench_points": [
     {
       "team": "Garipp Bowls",
-      "bench_points": 31.4
+      "bench_points": 31
     },
     {
       "team": "Calvins Cutthroats",
-      "bench_points": 44.08
+      "bench_points": 44
     },
     {
       "team": "Cow Bellz",
-      "bench_points": 27.9
+      "bench_points": 27
     },
     {
       "team": "The Baker Mayfields",
-      "bench_points": 22.6
+      "bench_points": 22
     },
     {
       "team": "Anubis",
-      "bench_points": 38.72
+      "bench_points": 38
     },
     {
       "team": "JustBoxes",
-      "bench_points": 52.14
+      "bench_points": 52
     },
     {
       "team": "LUCAS'S LUCKY LIONS",
-      "bench_points": 19.3
+      "bench_points": 19
     },
     {
       "team": "Leapfrog Clause",
-      "bench_points": 33.56
+      "bench_points": 33
     },
     {
       "team": "This One's for John",
-      "bench_points": 25.02
+      "bench_points": 25
     },
     {
       "team": "Super Mega Awesome ✨",
-      "bench_points": 41.9
+      "bench_points": 41
     },
     {
       "team": "TN Gamblers",
-      "bench_points": 29.44
+      "bench_points": 29
     },
     {
       "team": "Tuten Under the Covers",
-      "bench_points": 35.8
+      "bench_points": 35
     },
     {
       "team": "O-moss-em",
-      "bench_points": 47.66
+      "bench_points": 47
     },
     {
       "team": "Tebow's Purity Ring",
-      "bench_points": 61.28
+      "bench_points": 61
     }
   ],
   "start_sit": [
@@ -395,12 +395,12 @@
       "benched": {
         "name": "Darnell Mooney",
         "position": "WR",
-        "points": 18.4
+        "points": 18
       },
       "started": {
         "name": "Wan'Dale Robinson",
         "slot": "W/R/T",
-        "points": 6.2
+        "points": 6
       }
     },
     {
@@ -408,12 +408,12 @@
       "benched": {
         "name": "Tyler Allgeier",
         "position": "RB",
-        "points": 14.7
+        "points": 15
       },
       "started": {
         "name": "Zach Charbonnet",
         "slot": "RB",
-        "points": 9.1
+        "points": 9
       }
     },
     {
@@ -421,12 +421,12 @@
       "benched": {
         "name": "Jake Ferguson",
         "position": "TE",
-        "points": 16.9
+        "points": 17
       },
       "started": {
         "name": "Hunter Henry",
         "slot": "TE",
-        "points": 3.3
+        "points": 3
       }
     }
   ]
