@@ -22,6 +22,7 @@ npm run fixture:validate <path>  # manual weekly fixture: schema + cross-checks 
 npm run fixture:upload <path>    # validate again, stamp source.ingested_at, write fixtures/weekly/<season>-wNN.json to the store (HISTORY_BUCKET or data/); refuses on any error
 npm run runs           # browse the digest run archive; -- --pull copies records to data/runs/
 npm run auth           # Yahoo OAuth bootstrap (writes .tokens.json)
+npm run telegram:chats # list chats the bot has seen, to find TELEGRAM_CHAT_ID without posting
 npm run deploy         # MCP server → Lambda + API Gateway (idempotent)
 npm run deploy:digest  # scheduled digest Lambda
 npm run deploy:sync    # Sleeper players daily sync Lambda

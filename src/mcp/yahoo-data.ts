@@ -13,6 +13,7 @@
  */
 
 import { yahooFetch } from "../yahoo/client.ts";
+import { firstName } from "./names.ts";
 import {
   resolveWeek,
   WeekNotAvailableError,
@@ -49,10 +50,13 @@ function num(v: Json): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Yahoo nicknames are often full names; trim to a first name at the boundary (names.ts). */
 function managerName(merged: Record<string, Json>): string | null {
   const managers = merged.managers;
-  if (Array.isArray(managers)) return managers[0]?.manager?.nickname ?? null;
-  return items(managers, "manager")[0]?.nickname ?? null;
+  const nickname = Array.isArray(managers)
+    ? managers[0]?.manager?.nickname
+    : items(managers, "manager")[0]?.nickname;
+  return firstName(typeof nickname === "string" ? nickname : null);
 }
 
 // ---------------------------------------------------------------------------
