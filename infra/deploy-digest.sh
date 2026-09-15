@@ -135,7 +135,10 @@ fi
 # degraded mode that reads fixtures/weekly/ from the bucket. Set it in .env
 # and redeploy to flip; it's a deploy-time decision, on purpose, so a Tuesday
 # never silently switches sources.
-FANTASY_PROVIDER="$(get_env FANTASY_PROVIDER)"
+# A shell export wins over .env (same rule as .mcp.json), so a one-off
+# `FANTASY_PROVIDER=fixture npm run deploy:digest` flips mode without
+# editing the file every local script also reads.
+FANTASY_PROVIDER="${FANTASY_PROVIDER:-$(get_env FANTASY_PROVIDER)}"
 FANTASY_PROVIDER="${FANTASY_PROVIDER:-yahoo}"
 case "$FANTASY_PROVIDER" in yahoo|fixture) ;; *)
   echo "❌ FANTASY_PROVIDER=$FANTASY_PROVIDER — the digest Lambda supports yahoo or fixture"; exit 1;; esac
