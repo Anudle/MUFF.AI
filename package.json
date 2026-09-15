@@ -24,7 +24,8 @@
     "fixture:validate": "node --experimental-strip-types scripts/fixture-validate.ts",
     "fixture:upload": "node --experimental-strip-types scripts/fixture-upload.ts",
     "spike:sleeper": "node --env-file-if-exists=.env --experimental-strip-types scripts/sleeper-spike.ts",
-    "bot": "node --env-file=.env --experimental-strip-types src/telegram/bot.ts"
+    "bot": "node --env-file=.env --experimental-strip-types src/telegram/bot.ts",
+    "telegram:chats": "node --env-file=.env --experimental-strip-types scripts/telegram-chats.ts"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.1092.0",

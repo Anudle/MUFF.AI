@@ -65,6 +65,7 @@ Season-cumulative league standings.
 
 - **Input:** none (no week — season-level data)
 - **Returns:** `{league, season, standings: [{rank, team, manager, is_my_team, wins, losses, ties, points_for, points_against, streak}]}` — `streak` like `"W4"`/`"L2"`
+- **`manager` is a first name only** (everywhere it appears). Yahoo's nickname field is often a full name; `src/mcp/names.ts` trims it at the boundary so surnames never reach the model, the archive, or the group chat. A single trailing initial survives (`"kevin C"`) and Yahoo's hidden-name placeholder becomes `null`.
 - **Constraints:** read-only
 
 ### `get_transactions`
