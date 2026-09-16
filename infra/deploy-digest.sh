@@ -45,7 +45,14 @@ get_env() { grep -E "^$1=" .env 2>/dev/null | head -1 | cut -d= -f2- || true; }
 ANTHROPIC_API_KEY="$(get_env ANTHROPIC_API_KEY)"
 TELEGRAM_BOT_TOKEN="$(get_env TELEGRAM_BOT_TOKEN)"
 TELEGRAM_CHAT_ID="$(get_env TELEGRAM_CHAT_ID)"
-for v in ANTHROPIC_API_KEY TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID; do
+# The Yahoo client id/secret are needed to REFRESH the access token in the
+# secret (Basic auth on the token endpoint). Access tokens live ~1h, so
+# without these the digest only works if the MCP server happened to refresh
+# the shared secret within the last hour — which is exactly how the first
+# Yahoo-mode dry run passed and the second one failed (2026-09-15).
+YAHOO_CLIENT_ID="$(get_env YAHOO_CLIENT_ID)"
+YAHOO_CLIENT_SECRET="$(get_env YAHOO_CLIENT_SECRET)"
+for v in ANTHROPIC_API_KEY TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID YAHOO_CLIENT_ID YAHOO_CLIENT_SECRET; do
   [[ -n "${!v}" ]] || { echo "❌ $v missing from .env"; exit 1; }
 done
 
@@ -146,7 +153,8 @@ echo "==> Provider: $FANTASY_PROVIDER"
 ENV_JSON="$(TOKENS_SECRET_ID="$SECRET" HISTORY_BUCKET="$BUCKET" FANTASY_PROVIDER="$FANTASY_PROVIDER" \
   ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" \
   TELEGRAM_CHAT_ID="$TELEGRAM_CHAT_ID" \
-  node -e 'const p = ["TOKENS_SECRET_ID","HISTORY_BUCKET","FANTASY_PROVIDER","ANTHROPIC_API_KEY","TELEGRAM_BOT_TOKEN","TELEGRAM_CHAT_ID"];
+  YAHOO_CLIENT_ID="$YAHOO_CLIENT_ID" YAHOO_CLIENT_SECRET="$YAHOO_CLIENT_SECRET" \
+  node -e 'const p = ["TOKENS_SECRET_ID","HISTORY_BUCKET","FANTASY_PROVIDER","ANTHROPIC_API_KEY","TELEGRAM_BOT_TOKEN","TELEGRAM_CHAT_ID","YAHOO_CLIENT_ID","YAHOO_CLIENT_SECRET"];
     console.log(JSON.stringify({Variables: Object.fromEntries(p.map(k => [k, process.env[k]]))}))')"
 
 if aws lambda get-function --function-name "$FUNC" --region "$REGION" >/dev/null 2>&1; then
