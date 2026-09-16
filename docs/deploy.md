@@ -102,7 +102,9 @@ EventBridge Scheduler  muff-digest-tuesday
 muff-digest            (nodejs22.x, 512 MB, 300 s timeout)
   src/digest/lambda.ts — {} = last completed week + deliver; {"dry_run":true} for tests
   src/digest/run.ts    — gather → generate → render → persist → send (shared with the CLI)
-      ├── Secrets Manager: muff/yahoo-tokens   (same secret as the MCP server; yahoo mode)
+      ├── Secrets Manager: muff/yahoo-tokens   (same secret as the MCP server; yahoo mode.
+      │                                         Carries YAHOO_CLIENT_ID/SECRET too — refreshing
+      │                                         the ~1h access token needs them, MUFF-59 debrief)
       ├── S3: muff-digest-history-<acct>/digest-history.json  (power-ranking history)
       ├── S3: …/fixtures/weekly/<season>-wNN.json  (FANTASY_PROVIDER=fixture: hand-transcribed weeks, MUFF-58)
       ├── Anthropic API   (structured-output digest generation — bills API credits)
