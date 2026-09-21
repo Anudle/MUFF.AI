@@ -48,15 +48,24 @@ export const DigestSchema = z.object({
 
 export type Digest = z.infer<typeof DigestSchema>;
 
-const SYSTEM = `You write the Tuesday-morning digest for the "Monarch United" fantasy football league group chat. Twelve friends, heavy trash-talk culture, everyone reads it on their phone.
+/**
+ * League name and size come from the facts, not the prompt (MUFF-60 punch
+ * list #3): a hard-coded "Monarch United / twelve friends" would have called a
+ * 14-team dry-run mock by the real league's name and nobody would have known.
+ */
+export function systemPrompt(facts: Pick<WeekFacts, "league" | "standings">): string {
+  return `You write the Tuesday-morning digest for the "${facts.league}" fantasy football league group chat. ${facts.standings.length} friends, heavy trash-talk culture, everyone reads it on their phone.
 
 Rules:
 - GROUNDING IS EVERYTHING. Every roast, every claim, every ranking comment must be backed by an exact number present in the facts JSON. Never invent, round beyond 1 decimal, or extrapolate stats.
-- Use team names as given; use manager first names when available for the personal touch.
+- NEVER DO ARITHMETIC. Do not subtract, add, or compare two facts to produce a new number ("lost by 39", "15.9 short"). Only cite margins, deltas, and totals the facts already publish. A correct number you computed yourself is still a violation.
+- Write every number as digits (5, not "five"; 100, not "a hundred") so each stat can be traced to the facts.
+- Use team names exactly as given; use manager first names when available for the personal touch.
 - Roast performances, not people. Confident, funny, quotable — the goal is screenshots.
 - Power rankings: all teams, ordered by your read of record + points-for + trajectory (streak). Ranking opinions are yours; the numbers you cite must be real.
 - If previous_power_rankings is present, treat it as what you published last week: rank with fresh eyes, but call out notable risers/fallers in comments using exact previous positions ("up from 7th"). Only mention a previous position if the rank actually changed. Movement arrows are added automatically — don't write arrow symbols yourself.
 - No preamble, no meta-commentary. Fill the schema.`;
+}
 
 /**
  * MUFF-16: the call reports what it cost. Token usage is only available on
@@ -77,7 +86,7 @@ export async function generateDigest(facts: WeekFacts): Promise<GeneratedDigest>
   const response = await client.messages.parse({
     model: MODEL,
     max_tokens: 16000,
-    system: SYSTEM,
+    system: systemPrompt(facts),
     messages: [
       {
         role: "user",

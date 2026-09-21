@@ -45,7 +45,7 @@ meant to be read in order by a `sort()` and nothing more clever.
 S3 round-trip to answer "what has this cost me":
 
 ```
-fields @timestamp, week, source, cost_usd, duration_ms, delivered
+fields @timestamp, week, source, cost_usd, duration_ms, delivered, gate_pass, generations
 | filter tag = "MUFF_RUN"
 | sort @timestamp asc
 ```
@@ -98,6 +98,10 @@ PR) → **LLM-as-judge** for tone/quality (costs a call, not built yet) →
   strings: records `5-2`, streaks `W3`, transaction summaries), then demand
   every number in the model's prose appears in that set, 1-decimal rounding
   allowed. A cited stat with no source fact is a hallucination, full stop.
+  Spelled-out numbers (two…twenty, tens, hundred) are scanned as their value
+  too (MUFF-60): the dry run's "enough to beat *five* other teams" sailed past
+  a digits-only regex. Known blind spot, same as for digits: any value that
+  is also a standings rank (1..N) is always allowed.
 - **Format** — 3-5 trash-talk lines, each citing a number; one game note per
   matchup; power rankings covering all teams with ranks 1..N exactly once; no
   model-authored movement arrows (render.ts owns those); empty waiver watch
@@ -108,6 +112,12 @@ PR) → **LLM-as-judge** for tone/quality (costs a call, not built yet) →
   "missing + invented". `generate.ts` now snaps model output back to the
   facts' exact spelling, and render's movement arrows compare by the same key
   so the week-1 history (written before the snap) does not badge that team 🆕.
+
+The same `evaluateRecord()` also runs **inline** in `src/digest/run.ts` on
+every generation (MUFF-60): a failing digest is regenerated once, the second
+attempt ships regardless, and the record carries `gate.attempts` plus
+`gate_pass` / `generations` on the `MUFF_RUN` line. CI is the regression net;
+the inline gate is the last line before the group chat.
 
 What it scores, in order:
 

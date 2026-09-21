@@ -60,6 +60,18 @@ export function priceRun(model: string, usage: Anthropic.Usage): RunCost {
   };
 }
 
+/** Sum two calls' usage (a regenerated digest bills twice); price is null if either was unpriced. */
+export function addCosts(a: RunCost, b: RunCost): RunCost {
+  return {
+    model: a.model === b.model ? a.model : `${a.model}+${b.model}`,
+    input_tokens: a.input_tokens + b.input_tokens,
+    output_tokens: a.output_tokens + b.output_tokens,
+    cache_write_tokens: a.cache_write_tokens + b.cache_write_tokens,
+    cache_read_tokens: a.cache_read_tokens + b.cache_read_tokens,
+    cost_usd: a.cost_usd === null || b.cost_usd === null ? null : Number((a.cost_usd + b.cost_usd).toFixed(6)),
+  };
+}
+
 export function formatCost(cost: RunCost): string {
   const total = cost.cost_usd === null ? "unpriced model" : `$${cost.cost_usd.toFixed(4)}`;
   return `${total} (${cost.input_tokens} in / ${cost.output_tokens} out, ${cost.model})`;

@@ -51,6 +51,10 @@ export async function handler(event: DigestEvent | null | undefined) {
     duration_ms: result.duration_ms,
     chars: result.text.length,
     archived: result.archived,
+    // MUFF-60: inline rule gate — did the shipped digest pass, and how many
+    // generations it took (2 = the first one failed and was regenerated).
+    gate_pass: result.gate.pass,
+    generations: result.gate.attempts.length,
     cost_usd: result.cost.cost_usd,
     model: result.cost.model,
     input_tokens: result.cost.input_tokens,

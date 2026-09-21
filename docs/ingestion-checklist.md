@@ -165,7 +165,7 @@ What the validator catches, and what it can't:
 | A W-L column off by one | league wins ≠ losses, or games ≠ week number → error; exact delta with `--prev` |
 | Score typed under the wrong team | winner no longer matches the Streak letter → error; `points_for` delta wrong with `--prev` |
 | Wrong `points_for` | below this week's score, ≠ score in week 1, or ≠ last week + score with `--prev` → error |
-| Decimals in a score (the league scores whole numbers; only projections carry decimals) | warning only for 3+ decimals today — punch list MUFF-60 tightens this to "any decimal in a score" |
+| Decimals in a score (the league scores whole numbers; only projections carry decimals) | warning on any decimal in `points`, `points_for` or a bench total (MUFF-60); projections are exempt |
 | Bench total smaller than the benched player's points | error |
 | A score that is wrong but consistent with everything else | **not caught.** With `--prev`, the only way a bad score survives is if `points_for` was mistyped by exactly the same amount. Without `--prev`, a plausible wrong score in week 2+ passes. This is why `--prev` is in the command above and not a footnote. |
 

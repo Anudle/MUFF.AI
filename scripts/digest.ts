@@ -24,5 +24,9 @@ console.error(
   `Cost: ${formatCost(result.cost)} in ${(result.duration_ms / 1000).toFixed(1)}s`,
 );
 console.error(
+  `Gate: ${result.gate.pass ? "PASS" : "FAIL"} after ${result.gate.attempts.length} generation(s)` +
+    (result.gate.pass ? "" : ` — ${result.gate.attempts.at(-1)?.failed.join("; ")}`),
+);
+console.error(
   result.archived ? `Archived: ${storeLabel}${result.archived}` : "Archived: FAILED (see above)",
 );
