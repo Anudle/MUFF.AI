@@ -8,6 +8,7 @@
 
 import type { Digest } from "./generate.ts";
 import type { WeekFacts } from "./facts.ts";
+import { teamKey } from "./team-names.ts";
 
 const medals = ["🥇", "🥈", "🥉"];
 
@@ -18,7 +19,9 @@ function movement(
   prev: WeekFacts["previous_power_rankings"],
 ): string {
   if (!prev) return "";
-  const was = prev.find((p) => p.team === team)?.rank;
+  // Key comparison, not ===: week-1 history was written before team names were
+  // canonicalised and carries the model's straight apostrophe.
+  const was = prev.find((p) => teamKey(p.team) === teamKey(team))?.rank;
   if (was === undefined) return " 🆕";
   const delta = was - rank;
   if (delta > 0) return ` ▲${delta}`;
