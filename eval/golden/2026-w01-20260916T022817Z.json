@@ -1,0 +1,538 @@
+{
+ "run_id": "004ea8a1-b064-4c7f-9841-5459f67b9a12",
+ "started_at": "2026-09-16T02:27:49.945Z",
+ "finished_at": "2026-09-16T02:28:17.580Z",
+ "duration_ms": 27635,
+ "season": "2026",
+ "week": 1,
+ "delivery_attempted": false,
+ "cost": {
+  "model": "claude-opus-4-8",
+  "input_tokens": 5256,
+  "output_tokens": 1606,
+  "cache_write_tokens": 0,
+  "cache_read_tokens": 0,
+  "cost_usd": 0.06643
+ },
+ "facts": {
+  "league": "Monarch United Fantasy",
+  "season": "2026",
+  "week": 1,
+  "results": [
+   {
+    "winner": "Garipp Bowls",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "Garipp Bowls",
+      "manager": null,
+      "points": 97,
+      "projected": 60
+     },
+     {
+      "team": "Anubis",
+      "manager": "Anu",
+      "points": 43,
+      "projected": 66
+     }
+    ],
+    "margin": 54
+   },
+   {
+    "winner": "Leapfrog Clause",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "Calvins Cutthroats",
+      "manager": "Dan",
+      "points": 59,
+      "projected": 65
+     },
+     {
+      "team": "Leapfrog Clause",
+      "manager": "Matt",
+      "points": 104,
+      "projected": 60
+     }
+    ],
+    "margin": 45
+   },
+   {
+    "winner": "Cow Bellz",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "Cow Bellz",
+      "manager": "Kyle",
+      "points": 78,
+      "projected": 59
+     },
+     {
+      "team": "The Baker Mayfields",
+      "manager": "Barry",
+      "points": 73,
+      "projected": 63
+     }
+    ],
+    "margin": 5
+   },
+   {
+    "winner": "JustBoxes",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "JustBoxes",
+      "manager": "kyle",
+      "points": 91,
+      "projected": 66
+     },
+     {
+      "team": "Super Mega Awesome ✨",
+      "manager": "Jason",
+      "points": 21,
+      "projected": 54
+     }
+    ],
+    "margin": 70
+   },
+   {
+    "winner": "This One's for John",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "LUCAS'S LUCKY LIONS",
+      "manager": "Lucas",
+      "points": 57,
+      "projected": 56
+     },
+     {
+      "team": "This One's for John",
+      "manager": "David",
+      "points": 64,
+      "projected": 65
+     }
+    ],
+    "margin": 7
+   },
+   {
+    "winner": "O-moss-em",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "TN Gamblers",
+      "manager": "TN",
+      "points": 67,
+      "projected": 62
+     },
+     {
+      "team": "O-moss-em",
+      "manager": "Michael",
+      "points": 74,
+      "projected": 65
+     }
+    ],
+    "margin": 7
+   },
+   {
+    "winner": "Tuten Under the Covers",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "Tuten Under the Covers",
+      "manager": "kevin C",
+      "points": 60,
+      "projected": 53
+     },
+     {
+      "team": "Tebow’s Purity Ring",
+      "manager": "Ankit",
+      "points": 59,
+      "projected": 64
+     }
+    ],
+    "margin": 1
+   }
+  ],
+  "highest_scorer": {
+   "team": "Leapfrog Clause",
+   "points": 104
+  },
+  "lowest_scorer": {
+   "team": "Super Mega Awesome ✨",
+   "points": 21
+  },
+  "closest_game": {
+   "teams": [
+    "Tuten Under the Covers",
+    "Tebow’s Purity Ring"
+   ],
+   "margin": 1
+  },
+  "biggest_blowout": {
+   "winner": "JustBoxes",
+   "loser": "Super Mega Awesome ✨",
+   "margin": 70
+  },
+  "overachiever": {
+   "team": "Leapfrog Clause",
+   "delta": 44
+  },
+  "underachiever": {
+   "team": "Super Mega Awesome ✨",
+   "delta": -33
+  },
+  "bench_points": [
+   {
+    "team": "Tuten Under the Covers",
+    "manager": "kevin C",
+    "bench_points": 78
+   },
+   {
+    "team": "LUCAS'S LUCKY LIONS",
+    "manager": "Lucas",
+    "bench_points": 47
+   },
+   {
+    "team": "The Baker Mayfields",
+    "manager": "Barry",
+    "bench_points": 45
+   },
+   {
+    "team": "Leapfrog Clause",
+    "manager": "Matt",
+    "bench_points": 40
+   },
+   {
+    "team": "Cow Bellz",
+    "manager": "Kyle",
+    "bench_points": 33
+   },
+   {
+    "team": "Garipp Bowls",
+    "manager": null,
+    "bench_points": 28
+   },
+   {
+    "team": "O-moss-em",
+    "manager": "Michael",
+    "bench_points": 24
+   },
+   {
+    "team": "Super Mega Awesome ✨",
+    "manager": "Jason",
+    "bench_points": 21
+   },
+   {
+    "team": "Tebow’s Purity Ring",
+    "manager": "Ankit",
+    "bench_points": 21
+   },
+   {
+    "team": "This One's for John",
+    "manager": "David",
+    "bench_points": 20
+   },
+   {
+    "team": "Calvins Cutthroats",
+    "manager": "Dan",
+    "bench_points": 17
+   },
+   {
+    "team": "JustBoxes",
+    "manager": "kyle",
+    "bench_points": 17
+   },
+   {
+    "team": "TN Gamblers",
+    "manager": "TN",
+    "bench_points": 16
+   },
+   {
+    "team": "Anubis",
+    "manager": "Anu",
+    "bench_points": 6
+   }
+  ],
+  "worst_start_sit": {
+   "team": "Tuten Under the Covers",
+   "manager": "kevin C",
+   "benched": {
+    "name": "Trevor Lawrence",
+    "points": 28
+   },
+   "started": {
+    "name": "Bo Nix",
+    "slot": "QB",
+    "points": 4
+   },
+   "delta": 24,
+   "would_have_flipped_result": false
+  },
+  "standings": [
+   {
+    "rank": 1,
+    "team": "Leapfrog Clause",
+    "manager": "Matt",
+    "record": "1-0",
+    "points_for": 104,
+    "streak": "W1"
+   },
+   {
+    "rank": 2,
+    "team": "Garipp Bowls",
+    "manager": null,
+    "record": "1-0",
+    "points_for": 97,
+    "streak": "W1"
+   },
+   {
+    "rank": 3,
+    "team": "JustBoxes",
+    "manager": "kyle",
+    "record": "1-0",
+    "points_for": 91,
+    "streak": "W1"
+   },
+   {
+    "rank": 4,
+    "team": "Cow Bellz",
+    "manager": "Kyle",
+    "record": "1-0",
+    "points_for": 78,
+    "streak": "W1"
+   },
+   {
+    "rank": 5,
+    "team": "O-moss-em",
+    "manager": "Michael",
+    "record": "1-0",
+    "points_for": 74,
+    "streak": "W1"
+   },
+   {
+    "rank": 6,
+    "team": "This One's for John",
+    "manager": "David",
+    "record": "1-0",
+    "points_for": 64,
+    "streak": "W1"
+   },
+   {
+    "rank": 7,
+    "team": "Tuten Under the Covers",
+    "manager": "kevin C",
+    "record": "1-0",
+    "points_for": 60,
+    "streak": "W1"
+   },
+   {
+    "rank": 8,
+    "team": "The Baker Mayfields",
+    "manager": "Barry",
+    "record": "0-1",
+    "points_for": 73,
+    "streak": "L1"
+   },
+   {
+    "rank": 9,
+    "team": "TN Gamblers",
+    "manager": "TN",
+    "record": "0-1",
+    "points_for": 67,
+    "streak": "L1"
+   },
+   {
+    "rank": 10,
+    "team": "Calvins Cutthroats",
+    "manager": "Dan",
+    "record": "0-1",
+    "points_for": 59,
+    "streak": "L1"
+   },
+   {
+    "rank": 11,
+    "team": "Tebow’s Purity Ring",
+    "manager": "Ankit",
+    "record": "0-1",
+    "points_for": 59,
+    "streak": "L1"
+   },
+   {
+    "rank": 12,
+    "team": "LUCAS'S LUCKY LIONS",
+    "manager": "Lucas",
+    "record": "0-1",
+    "points_for": 57,
+    "streak": "L1"
+   },
+   {
+    "rank": 13,
+    "team": "Anubis",
+    "manager": "Anu",
+    "record": "0-1",
+    "points_for": 43,
+    "streak": "L1"
+   },
+   {
+    "rank": 14,
+    "team": "Super Mega Awesome ✨",
+    "manager": "Jason",
+    "record": "0-1",
+    "points_for": 21,
+    "streak": "L1"
+   }
+  ],
+  "previous_power_rankings": null,
+  "provenance": {
+   "source": "yahoo",
+   "ingested_by": null,
+   "ingested_at": null
+  },
+  "recent_transactions": [
+   {
+    "type": "add/drop",
+    "date": "2026-09-15",
+    "summary": "Caleb Douglas (WR) add: freeagents → Leapfrog Clause; Mack Hollins (WR) drop: Leapfrog Clause → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-15",
+    "summary": "Brenton Strange (TE) add: freeagents → O-moss-em; Raiders (DEF) drop: O-moss-em → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-14",
+    "summary": "Kalif Raymond (WR) add: freeagents → Anubis; Keon Coleman (WR) drop: Anubis → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-14",
+    "summary": "Evan Engram (TE) add: freeagents → Tuten Under the Covers; Chig Okonkwo (TE) drop: Tuten Under the Covers → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-14",
+    "summary": "Carson Wentz (QB) add: freeagents → Garipp Bowls; Aaron Rodgers (QB) drop: Garipp Bowls → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-14",
+    "summary": "Devaughn Vele (WR) add: freeagents → O-moss-em; Romeo Doubs (WR) drop: O-moss-em → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-13",
+    "summary": "Bengals (DEF) add: freeagents → Leapfrog Clause; Jalen McMillan (WR) drop: Leapfrog Clause → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-11",
+    "summary": "Kaleb Johnson (RB) add: freeagents → TN Gamblers; De'Zhaun Stribling (WR) drop: TN Gamblers → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-10",
+    "summary": "Makai Lemon (WR) add: freeagents → This One's for John; Chase McLaughlin (K) drop: This One's for John → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-10",
+    "summary": "Alvin Kamara (RB) add: freeagents → This One's for John; Makai Lemon (WR) drop: This One's for John → freeagents"
+   }
+  ]
+ },
+ "digest": {
+  "headline": "Leapfrog Clause Drops 104, Super Mega Awesome ✨ Drops the Ball",
+  "recap": "Week 1 was a bloodbath. Matt's Leapfrog Clause torched the league with a 104-point opener while Jason's Super Mega Awesome ✨ mustered a season-low 21 in a 70-point demolition. Meanwhile kevin C survived by a single point despite benching a 28-piece — chaos reigns and only seven teams walked away 1-0.",
+  "game_notes": [
+   "Garipp Bowls 97, Anubis 43 — Anu projected for 66 and delivered 43 in a 54-point beatdown.",
+   "Leapfrog Clause 104, Calvins Cutthroats 59 — Matt hangs a league-high 104 on Dan by 45.",
+   "Cow Bellz 78, The Baker Mayfields 73 — Kyle edges Barry by 5 in a nailbiter.",
+   "JustBoxes 91, Super Mega Awesome ✨ 21 — kyle's 70-point blowout is the week's cruelest.",
+   "This One's for John 64, LUCAS'S LUCKY LIONS 57 — David clips Lucas by 7.",
+   "O-moss-em 74, TN Gamblers 67 — Michael holds off TN by 7.",
+   "Tuten Under the Covers 60, Tebow's Purity Ring 59 — kevin C wins by a heart-stopping 1."
+  ],
+  "trash_talk": [
+   "Jason, 21 points and a bench that also scored 21 — you literally could've flipped a coin for your lineup and done exactly the same. Super Mega Awesome ✨ indeed.",
+   "kevin C won by 1 while leaving Trevor Lawrence's 28 on the bench to start Bo Nix for 4 — that's 78 bench points, more than your starters. You didn't win, you got away with it.",
+   "Anu projected 66 and scored 43 with a bench that mustered a comical 6 points. Nowhere to hide, Anubis.",
+   "Dan, Leapfrog dropped 104 on you and beat your projection by 44 — Calvins Cutthroats got run over by 45.",
+   "Barry left 45 bench points on the pine and lost by 5. Read the room, Baker Mayfields."
+  ],
+  "power_rankings": [
+   {
+    "rank": 1,
+    "team": "Leapfrog Clause",
+    "comment": "1-0 and a league-best 104 points-for, beating projection by 44. Matt is the early favorite."
+   },
+   {
+    "rank": 2,
+    "team": "Garipp Bowls",
+    "comment": "1-0 with 97 points and a 54-point statement win over Anubis."
+   },
+   {
+    "rank": 3,
+    "team": "JustBoxes",
+    "comment": "1-0 with 91 points and the week's 70-point blowout. kyle came to play."
+   },
+   {
+    "rank": 4,
+    "team": "Cow Bellz",
+    "comment": "1-0 with 78 points, though it took a 5-point squeaker over Barry."
+   },
+   {
+    "rank": 5,
+    "team": "O-moss-em",
+    "comment": "1-0 with 74 points; Michael edged TN by 7."
+   },
+   {
+    "rank": 6,
+    "team": "The Baker Mayfields",
+    "comment": "0-1 but 73 points-for — more than four winning teams. Barry's just unlucky (and left 45 on the bench)."
+   },
+   {
+    "rank": 7,
+    "team": "TN Gamblers",
+    "comment": "0-1 with a respectable 67 points, lost by just 7."
+   },
+   {
+    "rank": 8,
+    "team": "This One's for John",
+    "comment": "1-0 but only 64 points; David won ugly by 7."
+   },
+   {
+    "rank": 9,
+    "team": "Tuten Under the Covers",
+    "comment": "1-0 by a single point despite benching 78 points. kevin C is living dangerously."
+   },
+   {
+    "rank": 10,
+    "team": "Calvins Cutthroats",
+    "comment": "0-1, 59 points, ran into the 104-point buzzsaw."
+   },
+   {
+    "rank": 11,
+    "team": "Tebow's Purity Ring",
+    "comment": "0-1 with 59 points, lost by an agonizing 1."
+   },
+   {
+    "rank": 12,
+    "team": "LUCAS'S LUCKY LIONS",
+    "comment": "0-1 with 57 points and 47 left on the bench. Not so lucky, Lucas."
+   },
+   {
+    "rank": 13,
+    "team": "Anubis",
+    "comment": "0-1, just 43 points and a 54-point loss. Anu has work to do."
+   },
+   {
+    "rank": 14,
+    "team": "Super Mega Awesome ✨",
+    "comment": "0-1 with a league-worst 21 points, 33 below projection. Bottom of the barrel."
+   }
+  ],
+  "waiver_watch": "This One's for John churned the wire hard, grabbing Alvin Kamara after briefly holding Makai Lemon, while Tuten Under the Covers added Evan Engram over Chig Okonkwo. Garipp Bowls cut bait on Aaron Rodgers for Carson Wentz."
+ },
+ "text": "🏈 *MUFF WEEKLY — Week 1* 🏈\n\n_Leapfrog Clause Drops 104, Super Mega Awesome ✨ Drops the Ball_\n\nWeek 1 was a bloodbath. Matt's Leapfrog Clause torched the league with a 104-point opener while Jason's Super Mega Awesome ✨ mustered a season-low 21 in a 70-point demolition. Meanwhile kevin C survived by a single point despite benching a 28-piece — chaos reigns and only seven teams walked away 1-0.\n\n*📋 Around the league*\n• Garipp Bowls 97, Anubis 43 — Anu projected for 66 and delivered 43 in a 54-point beatdown.\n• Leapfrog Clause 104, Calvins Cutthroats 59 — Matt hangs a league-high 104 on Dan by 45.\n• Cow Bellz 78, The Baker Mayfields 73 — Kyle edges Barry by 5 in a nailbiter.\n• JustBoxes 91, Super Mega Awesome ✨ 21 — kyle's 70-point blowout is the week's cruelest.\n• This One's for John 64, LUCAS'S LUCKY LIONS 57 — David clips Lucas by 7.\n• O-moss-em 74, TN Gamblers 67 — Michael holds off TN by 7.\n• Tuten Under the Covers 60, Tebow's Purity Ring 59 — kevin C wins by a heart-stopping 1.\n\n*🔥 Trash talk corner*\n• Jason, 21 points and a bench that also scored 21 — you literally could've flipped a coin for your lineup and done exactly the same. Super Mega Awesome ✨ indeed.\n• kevin C won by 1 while leaving Trevor Lawrence's 28 on the bench to start Bo Nix for 4 — that's 78 bench points, more than your starters. You didn't win, you got away with it.\n• Anu projected 66 and scored 43 with a bench that mustered a comical 6 points. Nowhere to hide, Anubis.\n• Dan, Leapfrog dropped 104 on you and beat your projection by 44 — Calvins Cutthroats got run over by 45.\n• Barry left 45 bench points on the pine and lost by 5. Read the room, Baker Mayfields.\n\n*👑 Power rankings*\n🥇 *Leapfrog Clause* — 1-0 and a league-best 104 points-for, beating projection by 44. Matt is the early favorite.\n🥈 *Garipp Bowls* — 1-0 with 97 points and a 54-point statement win over Anubis.\n🥉 *JustBoxes* — 1-0 with 91 points and the week's 70-point blowout. kyle came to play.\n4. *Cow Bellz* — 1-0 with 78 points, though it took a 5-point squeaker over Barry.\n5. *O-moss-em* — 1-0 with 74 points; Michael edged TN by 7.\n6. *The Baker Mayfields* — 0-1 but 73 points-for — more than four winning teams. Barry's just unlucky (and left 45 on the bench).\n7. *TN Gamblers* — 0-1 with a respectable 67 points, lost by just 7.\n8. *This One's for John* — 1-0 but only 64 points; David won ugly by 7.\n9. *Tuten Under the Covers* — 1-0 by a single point despite benching 78 points. kevin C is living dangerously.\n10. *Calvins Cutthroats* — 0-1, 59 points, ran into the 104-point buzzsaw.\n11. *Tebow's Purity Ring* — 0-1 with 59 points, lost by an agonizing 1.\n12. *LUCAS'S LUCKY LIONS* — 0-1 with 57 points and 47 left on the bench. Not so lucky, Lucas.\n13. *Anubis* — 0-1, just 43 points and a 54-point loss. Anu has work to do.\n14. *Super Mega Awesome ✨* — 0-1 with a league-worst 21 points, 33 below projection. Bottom of the barrel.\n\n*🛒 Waiver watch*\nThis One's for John churned the wire hard, grabbing Alvin Kamara after briefly holding Makai Lemon, while Tuten Under the Covers added Evan Engram over Chig Okonkwo. Garipp Bowls cut bait on Aaron Rodgers for Carson Wentz.\n\n_Generated by MUFF.ai — argue with the data, not with me._"
+}

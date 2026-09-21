@@ -24,7 +24,13 @@ into `2025-w01-blowout.json`.
 
 **`golden/`** — real archived run records promoted to permanent test cases.
 Empty until the season produces them; `npm run runs -- --pull` fetches
-candidates into `data/runs/`, and the keepers get copied here.
+candidates into `data/runs/`, and the keepers get copied here — always from
+S3, never from a local `npm run digest` (mock runs land in `data/runs/` too;
+`facts.provenance` tells them apart).
+
+| Golden record | Why it was promoted |
+|---|---|
+| `2026-w01-20260916T022817Z` | First real Yahoo week (14 teams, `source: yahoo`). Pins the curly-apostrophe team name (`Tebow’s Purity Ring`) that the model echoes as `'` — the eval must match by `teamKey()`, not bytes. |
 
 `npm run eval` scores everything (see `docs/observability.md`);
 `npm run eval -- --live` additionally runs the real model against each

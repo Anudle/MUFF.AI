@@ -23,6 +23,7 @@
 
 import type { Digest } from "../digest/generate.ts";
 import type { WeekFacts } from "../digest/facts.ts";
+import { teamKey } from "../digest/team-names.ts";
 
 /** What every check runs against: model input, model output, rendered message. */
 export interface EvalRecord {
@@ -128,10 +129,12 @@ export function evaluateRecord({ facts, digest, text }: EvalRecord): EvalReport 
     `${digest.game_notes.length} notes for ${facts.results.length} matchups`,
   );
 
-  const rankedTeams = new Set(digest.power_rankings.map((p) => p.team));
-  const leagueTeams = new Set(facts.standings.map((s) => s.team));
-  const missing = [...leagueTeams].filter((t) => !rankedTeams.has(t));
-  const unknown = [...rankedTeams].filter((t) => !leagueTeams.has(t));
+  // Compare by teamKey, not raw string: the model writes "Tebow's" for Yahoo's
+  // "Tebow’s", and archived runs predate canonicalisation in generate.ts.
+  const rankedTeams = new Set(digest.power_rankings.map((p) => teamKey(p.team)));
+  const leagueTeams = new Set(facts.standings.map((s) => teamKey(s.team)));
+  const missing = facts.standings.map((s) => s.team).filter((t) => !rankedTeams.has(teamKey(t)));
+  const unknown = digest.power_rankings.map((p) => p.team).filter((t) => !leagueTeams.has(teamKey(t)));
   const ranks = digest.power_rankings.map((p) => p.rank).sort((a, b) => a - b);
   const ranksOk = ranks.every((r, i) => r === i + 1);
   check(

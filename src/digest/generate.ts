@@ -17,6 +17,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { priceRun, type RunCost } from "./cost.ts";
 import type { WeekFacts } from "./facts.ts";
+import { canonicalizeTeams } from "./team-names.ts";
 
 const MODEL = "claude-opus-4-8";
 
@@ -90,5 +91,8 @@ export async function generateDigest(facts: WeekFacts): Promise<GeneratedDigest>
   }
   // response.model is what actually served the request — prefer it over the
   // requested id so an alias or server-side reroute prices correctly.
-  return { digest: response.parsed_output, cost: priceRun(response.model ?? MODEL, response.usage) };
+  // Snap team names back to the facts' exact bytes (see team-names.ts): the
+  // model normalises typography (’ → ') and every downstream join is by name.
+  const digest = canonicalizeTeams(response.parsed_output, facts.standings.map((s) => s.team));
+  return { digest, cost: priceRun(response.model ?? MODEL, response.usage) };
 }

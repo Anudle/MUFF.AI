@@ -102,6 +102,12 @@ PR) → **LLM-as-judge** for tone/quality (costs a call, not built yet) →
   matchup; power rankings covering all teams with ranks 1..N exactly once; no
   model-authored movement arrows (render.ts owns those); empty waiver watch
   when the facts show no transactions; rendered text within Telegram's 4096.
+  Team names are matched by `teamKey()` (`src/digest/team-names.ts`), not raw
+  equality: Yahoo sends `Tebow’s Purity Ring` (U+2019) and the model writes
+  `Tebow's` (U+0027), which made every real week-1 run fail this check as
+  "missing + invented". `generate.ts` now snaps model output back to the
+  facts' exact spelling, and render's movement arrows compare by the same key
+  so the week-1 history (written before the snap) does not badge that team 🆕.
 
 What it scores, in order:
 
