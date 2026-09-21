@@ -11,19 +11,33 @@
  * then dies has sent nothing, and the league notices that.
  */
 
-import { archiveRun } from "./archive.ts";
-import type { RunCost } from "./cost.ts";
+import { archiveRun, type GateResult } from "./archive.ts";
+import { addCosts, type RunCost } from "./cost.ts";
+import { evaluateRecord } from "../eval/checks.ts";
 import type { Provenance } from "../mcp/provider.ts";
 import { gatherWeekFacts } from "./facts.ts";
 import { generateDigest } from "./generate.ts";
 import { savePowerRankings } from "./history.ts";
 import { renderDigest } from "./render.ts";
 
+/**
+ * Progress lines. Locally they go to stderr so stdout stays the digest text
+ * (scripts/digest.ts prints it there); on Lambda, console.error would tag
+ * every line ERROR in CloudWatch and drown the one signal that matters — a
+ * failed invocation — so they log at INFO instead.
+ */
+const progress = process.env.AWS_LAMBDA_FUNCTION_NAME ? console.info : console.error;
+
+/** How many times the model may be asked for a week before we ship what we have. */
+const MAX_GENERATIONS = 2;
+
 export interface DigestRunResult {
   run_id: string;
   season: string;
   week: number;
   text: string;
+  /** Inline rule-gate verdict: did the shipped digest pass, and how many generations it took. */
+  gate: GateResult;
   sent_to: number | null;
   cost: RunCost;
   duration_ms: number;
@@ -40,17 +54,33 @@ export async function runDigest(opts: {
   const runId = crypto.randomUUID();
   const startedAt = new Date();
 
-  console.error(`Gathering facts${opts.week ? ` for week ${opts.week}` : ""}…`);
+  progress(`Gathering facts${opts.week ? ` for week ${opts.week}` : ""}…`);
   const facts = await gatherWeekFacts(opts.week);
-  console.error(
+  progress(
     `Week ${facts.week}: ${facts.results.length} matchups, ` +
       `${facts.bench_points.length} rosters, ` +
       `worst start/sit: ${facts.worst_start_sit ? `${facts.worst_start_sit.team} (${facts.worst_start_sit.delta} pts)` : "none"}`,
   );
 
-  console.error("Generating digest…");
-  const { digest, cost } = await generateDigest(facts);
-  const text = renderDigest(facts, digest);
+  // The rule gate (src/eval/checks.ts) runs inline, not just in CI: a digest
+  // that fails it is regenerated once (MUFF-60 punch list #1). Second attempt
+  // ships regardless — a slightly-off digest beats a missed Tuesday, and the
+  // archive records both verdicts so the eval can see what happened.
+  let digest, cost, text;
+  const attempts: GateResult["attempts"] = [];
+  for (let attempt = 1; ; attempt++) {
+    progress(attempt === 1 ? "Generating digest…" : `Gate failed — regenerating (attempt ${attempt}/${MAX_GENERATIONS})…`);
+    const generated = await generateDigest(facts);
+    const t = renderDigest(facts, generated.digest);
+    const report = evaluateRecord({ facts, digest: generated.digest, text: t });
+    attempts.push({ pass: report.pass, failed: report.checks.filter((c) => !c.ok).map((c) => `${c.id}: ${c.detail}`) });
+    cost = cost ? addCosts(cost, generated.cost) : generated.cost;
+    digest = generated.digest;
+    text = t;
+    if (report.pass || attempt >= MAX_GENERATIONS) break;
+    progress(`  ${attempts[attempts.length - 1].failed.join("\n  ")}`);
+  }
+  const gate: GateResult = { pass: attempts[attempts.length - 1].pass, attempts };
 
   // Persist this week's rankings so next week's digest can show movement.
   // (Re-running a week overwrites its entry — latest run is what "published" means.)
@@ -73,6 +103,7 @@ export async function runDigest(opts: {
     facts,
     digest,
     text,
+    gate,
   });
 
   let sentTo: number | null = null;
@@ -81,7 +112,7 @@ export async function runDigest(opts: {
     if (!chatId) throw new Error("Set TELEGRAM_CHAT_ID to deliver the digest.");
     const { sendMessage } = await import("../telegram/bot.ts");
     await sendMessage(chatId, text);
-    console.error(`Sent to Telegram chat ${chatId}.`);
+    progress(`Sent to Telegram chat ${chatId}.`);
     sentTo = chatId;
   }
 
@@ -90,6 +121,7 @@ export async function runDigest(opts: {
     season: facts.season,
     week: facts.week,
     text,
+    gate,
     sent_to: sentTo,
     cost,
     duration_ms: durationMs,

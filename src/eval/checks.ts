@@ -50,6 +50,28 @@ const NUM_RE = /\d+(?:\.\d+)?/g;
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
 /**
+ * Spelled-out numbers the model might reach for ("beat five other teams").
+ * The prompt forbids them, but a rule the checker cannot see is not a rule:
+ * each word is scanned as its value (MUFF-60 punch list #2). "one" is left
+ * out on purpose — as a pronoun/article it is everywhere, and 1 is always a
+ * standings rank anyway.
+ */
+const NUMBER_WORDS: Record<string, number> = {
+  two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17,
+  eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60,
+  seventy: 70, eighty: 80, ninety: 90, hundred: 100,
+};
+const NUMBER_WORD_RE = new RegExp(`\\b(${Object.keys(NUMBER_WORDS).join("|")})\\b`, "gi");
+
+/** Every numeric token in a prose string, digits and number words alike, as [token, value]. */
+export function proseNumbers(text: string): [string, number][] {
+  const digits = (text.match(NUM_RE) ?? []).map((t): [string, number] => [t, parseFloat(t)]);
+  const words = (text.match(NUMBER_WORD_RE) ?? []).map((w): [string, number] => [w, NUMBER_WORDS[w.toLowerCase()]]);
+  return [...digits, ...words];
+}
+
+/**
  * Every number a digest may legally cite: numeric fact values, numbers inside
  * fact strings, absolute values (prose says "24.14 under projection" for a
  * delta of -24.14), and 1-decimal roundings.
@@ -94,8 +116,8 @@ export function evaluateRecord({ facts, digest, text }: EvalRecord): EvalReport 
   const allowed = collectFactNumbers(facts);
   const hallucinated: string[] = [];
   for (const [field, value] of proseFields(digest)) {
-    for (const token of value.match(NUM_RE) ?? []) {
-      if (!allowed.has(parseFloat(token))) hallucinated.push(`${field}: "${token}"`);
+    for (const [token, n] of proseNumbers(value)) {
+      if (!allowed.has(n)) hallucinated.push(`${field}: "${token}"`);
     }
   }
   check(

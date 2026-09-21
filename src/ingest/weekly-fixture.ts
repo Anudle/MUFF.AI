@@ -212,7 +212,7 @@ export function checkWeeklyFixture(f: WeeklyFixture, prev?: WeeklyFixture | null
       if (!teams.has(t.team)) error(`${path}.team`, `"${t.team}" is not in standings — typo, or missing standings row?`);
       if (seen.has(t.team)) error(`${path}.team`, `"${t.team}" already played in matchup ${seen.get(t.team)}`);
       seen.set(t.team, i);
-      if (!near(t.points, r2(t.points), 1e-9)) warn(`${path}.points`, `Yahoo shows 2 decimals; ${t.points} looks mistyped`);
+      if (!Number.isInteger(t.points)) warn(`${path}.points`, `the league scores whole numbers; ${t.points} looks mistyped (projections are the only decimals on the card)`);
       if (t.projected === null) noProjection.push(t.team);
       const won = a.points === b.points ? null : t.points > (j === 0 ? b.points : a.points);
       thisWeek.set(t.team, { points: t.points, won });
@@ -229,6 +229,7 @@ export function checkWeeklyFixture(f: WeeklyFixture, prev?: WeeklyFixture | null
 
   // --- per-team consistency: this week's result vs the standings row ----------
   f.standings.forEach((s, i) => {
+    if (!Number.isInteger(s.points_for)) warn(`standings.${i}.points_for`, `the league scores whole numbers; ${s.points_for} looks mistyped`);
     const g = thisWeek.get(s.team);
     if (!g) return;
     if (s.points_for + 0.011 < g.points) {
@@ -254,6 +255,7 @@ export function checkWeeklyFixture(f: WeeklyFixture, prev?: WeeklyFixture | null
   f.bench_points.forEach((b, i) => {
     if (!teams.has(b.team)) error(`bench_points.${i}.team`, `"${b.team}" is not in standings`);
     if (benchTeams.has(b.team)) error(`bench_points.${i}.team`, `"${b.team}" listed twice`);
+    if (!Number.isInteger(b.bench_points)) warn(`bench_points.${i}.bench_points`, `the league scores whole numbers; ${b.bench_points} looks mistyped`);
     benchTeams.add(b.team);
   });
   if (benchTeams.size > 0 && benchTeams.size < teams.size) {

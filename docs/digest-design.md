@@ -28,6 +28,26 @@ would-it-have-flipped-the-result, closest game, projection misses), and the
 prompt forbids any number not present in the facts JSON. Hallucinated stats are
 structurally hard: the model's only job is prose around pre-computed truth.
 
+Two refinements from the Sept 10 dry run (`docs/dry-run-2026-09-10.md`, MUFF-60):
+
+- **"Never do arithmetic" is its own prompt rule.** Two of three gate failures
+  were *correct* subtractions of real facts ("lost by 39"). Provenance, not
+  truth, is the invariant, so the prompt now says a number the model computed
+  itself is a violation even when right, and that every number is written as
+  digits (the checker maps number words too, but the rule should be visible
+  to the model, not just to the checker).
+- **The rule gate runs inline, with one retry.** `run.ts` scores every
+  generation with `src/eval/checks.ts` before archiving; a failure regenerates
+  once, and the second attempt ships regardless — a late digest is worse than
+  an imperfect one, and the archive records both verdicts (`gate.attempts`)
+  so the eval can see what happened. Cost doubles on a retry, which is why the
+  cap is two, not "until it passes".
+
+The system prompt derives the league name and team count from the facts
+(`systemPrompt(facts)`) rather than hard-coding them: the dry-run mock, keyed
+"(dry-run mock)" in its league name, would otherwise have been introduced as
+the real league.
+
 ## Structured output: schema for shape, prompt for content
 
 `client.messages.parse()` + `zodOutputFormat(DigestSchema)` →

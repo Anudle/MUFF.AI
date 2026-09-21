@@ -24,6 +24,12 @@ import { store } from "../store.ts";
 
 export const RUNS_PREFIX = "runs";
 
+/** The inline rule gate's verdict per generation attempt (MUFF-60): what failed, and whether the shipped one passed. */
+export interface GateResult {
+  pass: boolean;
+  attempts: { pass: boolean; failed: string[] }[];
+}
+
 export interface RunRecord {
   run_id: string;
   started_at: string;
@@ -37,6 +43,8 @@ export interface RunRecord {
   facts: WeekFacts;
   digest: Digest;
   text: string;
+  /** Absent on records archived before the inline gate existed. */
+  gate?: GateResult;
 }
 
 /** `runs/2025-w07-20260915T130004Z.json` — sorts chronologically, week zero-padded. */

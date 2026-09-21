@@ -122,7 +122,9 @@ the digest reads the MCP deploy's tokens secret). Notes:
 - **History moved to S3**: a Lambda's filesystem evaporates between runs, so
   `data/digest-history.json` only feeds the *first* deploy (seed). After
   that the bucket is the source of truth, same never-clobber rule as the
-  tokens secret.
+  tokens secret. The local file is untracked (MUFF-60 punch list #6): every
+  `npm run digest` rewrites it with whatever week it just ran — a mock's
+  rankings included — so it was one `git add .` away from being committed.
 - **Failures are loud**: `sendMessage` throws, the handler doesn't catch, so
   a missed Tuesday shows as a failed invocation in CloudWatch
   (`aws logs tail /aws/lambda/muff-digest --region us-east-2`).
