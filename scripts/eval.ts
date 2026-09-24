@@ -10,9 +10,10 @@
  *      eval/golden/, plus any paths given as arguments. This is where the
  *      real season gets graded once runs exist.
  *   3. `--live` (optional, costs money): run the ACTUAL digest pipeline —
- *      generateDigest on claude-opus-4-8 — against each fixture and score
- *      the real model output. The golden-dataset eval proper: frozen inputs,
- *      live model, rule-checked outputs. Needs ANTHROPIC_API_KEY.
+ *      generateDigest on claude-opus-4-8 — against each fixture AND the
+ *      facts of each eval/golden/ record, and score the real model output.
+ *      The golden-dataset eval proper: frozen inputs, live model,
+ *      rule-checked outputs. Needs ANTHROPIC_API_KEY.
  *
  *   npm run eval                     # self-test + score archived records
  *   npm run eval -- data/runs/x.json # also score a specific record
@@ -106,11 +107,18 @@ if (recordFiles.length === 0) {
 if (live) {
   const { generateDigest } = await import("../src/digest/generate.ts");
   const { formatCost } = await import("../src/digest/cost.ts");
-  console.log(`\nLive eval — generating against ${fixtureFiles.length} fixture(s)`);
-  for (const file of fixtureFiles) {
-    const facts = JSON.parse(fs.readFileSync(file, "utf8")) as WeekFacts;
+  // Synthetic fixtures pin edge cases; golden records pin real league data
+  // (typography, 14 teams, real movement). Regenerating the golden facts is
+  // what catches a prompt change that only breaks on real weeks.
+  const goldenFiles = jsonFiles(path.join(process.cwd(), "eval", "golden"));
+  const inputs: Array<{ name: string; facts: WeekFacts }> = [
+    ...fixtureFiles.map((f) => ({ name: path.basename(f, ".json"), facts: JSON.parse(fs.readFileSync(f, "utf8")) as WeekFacts })),
+    ...goldenFiles.map((f) => ({ name: `golden/${path.basename(f, ".json")}`, facts: (JSON.parse(fs.readFileSync(f, "utf8")) as RunRecord).facts })),
+  ];
+  console.log(`\nLive eval — generating against ${fixtureFiles.length} fixture(s) + ${goldenFiles.length} golden record(s)`);
+  for (const { name, facts } of inputs) {
     const { digest, cost } = await generateDigest(facts);
-    report(`${path.basename(file, ".json")} — ${formatCost(cost)}`, {
+    report(`${name} — ${formatCost(cost)}`, {
       ...evaluateRecord({ facts, digest, text: renderDigest(facts, digest) }),
     });
   }
