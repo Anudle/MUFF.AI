@@ -130,18 +130,18 @@ What it scores, in order:
    identical to one that works, so CI proves it catches a planted
    hallucination on every PR. No keys, no network.
 2. **Archived run records** — everything in `data/runs/` (via
-   `npm run runs -- --pull`) and `eval/golden/`. Empty until the season
-   starts; this is where real Tuesdays get graded.
+   `npm run runs -- --pull`) and `eval/golden/`. This is where real
+   Tuesdays get graded.
 3. **`npm run eval -- --live`** — the golden-dataset eval proper: run the
-   actual `generateDigest` call against each frozen fixture and rule-check the
-   real model output, cost printed per fixture. Local/manual for now; costs
+   actual `generateDigest` call against each frozen fixture and each golden
+   record's facts, and rule-check the real model output, cost printed per fixture. Local/manual for now; costs
    API money by design.
 
 ## Still open in MUFF-16
 
 - LLM-as-judge for tone, on top of the rule checks.
-- Golden records: promote real archived runs into `eval/golden/` once the
-  season produces them, and consider a scheduled `--live` CI job with
+- Golden records: promotion has started (weeks 1–2 of 2026, see
+  `eval/README.md`); consider a scheduled `--live` CI job with
   `ANTHROPIC_API_KEY` as a repo secret.
 - Latency/failure alerting (a Tuesday that doesn't fire is currently only
   visible as a failed invocation in CloudWatch).
