@@ -24,7 +24,8 @@ import {
   resolveLeague,
 } from "../mcp/data.ts";
 import type { Provenance } from "../mcp/provider.ts";
-import { loadPowerRankings } from "./history.ts";
+import { loadPowerRankings, type PollTally } from "./history.ts";
+import { teamKey } from "./team-names.ts";
 
 // Slots that score points. Everything else (BN, IR) rides the pine.
 const isStarter = (slot: string | null) => slot !== null && slot !== "BN" && slot !== "IR";
@@ -82,6 +83,30 @@ export interface WeekFacts {
   /** The power rankings PUBLISHED in last week's digest (null in week 1 / cold start). */
   previous_power_rankings: { rank: number; team: string }[] | null;
   /**
+   * MUFF-40: next week's Game of the Week, picked HERE — the upcoming matchup
+   * with the closest projected margin (tiebreak: combined points-for). The
+   * model never chooses it. null when the provider has no upcoming week or no
+   * projections for it.
+   */
+  game_of_the_week: {
+    week: number;
+    teams: { team: string; manager: string | null; record: string; projected: number }[];
+    projected_margin: number;
+  } | null;
+  /**
+   * MUFF-40: how the chat voted on THIS week's Game of the Week, closed
+   * before this run. Percentages are computed here, never by the model.
+   * null when there was no poll, or nobody voted.
+   */
+  group_predictions: {
+    teams: { team: string; votes: number; pct: number }[];
+    total_votes: number;
+    winner: string | null;
+    /** The side most votes backed (null on an even split). */
+    majority_backed: string | null;
+    majority_right: boolean | null;
+  } | null;
+  /**
    * MUFF-58: where these numbers came from (API vs. hand-transcribed).
    * Archived with the run and logged; stripped before the model sees the
    * facts (generate.ts) and ignored by the groundedness checker.
@@ -97,9 +122,19 @@ export interface WeekInputs {
   rosters: Awaited<ReturnType<typeof getLeagueRosters>>;
   previous_power_rankings: WeekFacts["previous_power_rankings"];
   provenance: Provenance;
+  /** MUFF-40: the scoreboard for week+1 (projections only, pre-kickoff). Optional — the manual path has none. */
+  upcoming?: Awaited<ReturnType<typeof getWeekResults>> | null;
+  /** MUFF-40: the closed poll for THIS week, if one was posted and closed. */
+  poll?: PollTally | null;
 }
 
-export async function gatherWeekFacts(week?: number): Promise<WeekFacts> {
+/**
+ * MUFF-40: how gather gets last week's poll result. Injected because closing
+ * a Telegram poll is a side effect run.ts owns (and a dry run must not do).
+ */
+export type PollLookup = (season: string, week: number) => Promise<PollTally | null>;
+
+export async function gatherWeekFacts(week?: number, opts: { poll?: PollLookup } = {}): Promise<WeekFacts> {
   const league = await resolveLeague();
   // For the Tuesday digest with no explicit week, recap the LAST completed
   // week: during the season Yahoo's current_week has already advanced by
@@ -116,7 +151,68 @@ export async function gatherWeekFacts(week?: number): Promise<WeekFacts> {
     rosters: await getLeagueRosters(w),
     previous_power_rankings: await loadPowerRankings(results.season, w - 1),
     provenance: await getProvenance(w),
+    // Off-season, final week, or a provider that refuses future weeks
+    // (fixture mode): no upcoming scoreboard means no poll, not a failed digest.
+    upcoming: await getWeekResults(w + 1).catch(() => null),
+    poll: opts.poll ? await opts.poll(results.season, w) : null,
   });
+}
+
+/** MUFF-40: closest projected margin wins; combined points-for breaks a tie (the bigger game). */
+function pickGameOfTheWeek(
+  upcoming: WeekInputs["upcoming"],
+  standings: WeekFacts["standings"],
+): WeekFacts["game_of_the_week"] {
+  if (!upcoming) return null;
+  const byTeam = new Map(standings.map((s) => [teamKey(s.team), s]));
+  const candidates = upcoming.matchups
+    .filter(
+      (m) =>
+        m.teams.length === 2 &&
+        m.teams.every((t) => t.team && t.projected_points !== null) &&
+        // A week that already has points on the board is not upcoming.
+        m.teams.every((t) => !t.points),
+    )
+    .map((m) => ({
+      teams: m.teams,
+      margin: +Math.abs(m.teams[0].projected_points! - m.teams[1].projected_points!).toFixed(2),
+      points_for: m.teams.reduce((sum, t) => sum + (byTeam.get(teamKey(t.team!))?.points_for ?? 0), 0),
+    }))
+    .sort((a, b) => a.margin - b.margin || b.points_for - a.points_for);
+  const pick = candidates[0];
+  if (!pick) return null;
+  return {
+    week: upcoming.week,
+    teams: pick.teams.map((t) => ({
+      team: t.team!,
+      manager: t.manager,
+      record: byTeam.get(teamKey(t.team!))?.record ?? "0-0",
+      projected: t.projected_points!,
+    })),
+    projected_margin: pick.margin,
+  };
+}
+
+/** MUFF-40: the closed poll against what actually happened. Nobody voted → null, no receipts. */
+function deriveGroupPredictions(
+  poll: WeekInputs["poll"],
+  games: WeekFacts["results"],
+): WeekFacts["group_predictions"] {
+  if (!poll) return null;
+  const total = poll.options.reduce((sum, o) => sum + o.votes, 0);
+  if (total === 0) return null;
+  const teams = poll.options.map((o) => ({ team: o.team, votes: o.votes, pct: Math.round((o.votes / total) * 100) }));
+  const game = games.find((g) => poll.options.every((o) => g.teams.some((t) => teamKey(t.team) === teamKey(o.team))));
+  const winner = game?.winner ?? null;
+  const [top, second] = [...teams].sort((a, b) => b.votes - a.votes);
+  const majority = top && second && top.votes > second.votes ? top.team : null;
+  return {
+    teams,
+    total_votes: total,
+    winner,
+    majority_backed: majority,
+    majority_right: majority && winner ? teamKey(majority) === teamKey(winner) : null,
+  };
 }
 
 /**
@@ -193,6 +289,15 @@ export function deriveWeekFacts(w: number, inputs: WeekInputs): WeekFacts {
     }
   }
 
+  const standingsRows = standings.standings.map((s) => ({
+    rank: s.rank,
+    team: s.team ?? "?",
+    manager: s.manager,
+    record: `${s.wins ?? 0}-${s.losses ?? 0}${s.ties ? `-${s.ties}` : ""}`,
+    points_for: s.points_for,
+    streak: s.streak,
+  }));
+
   return {
     league: results.league,
     season: results.season,
@@ -217,15 +322,10 @@ export function deriveWeekFacts(w: number, inputs: WeekInputs): WeekFacts {
     underachiever: deltas.at(-1) ?? null,
     bench_points: bench,
     worst_start_sit: worstStartSit,
-    standings: standings.standings.map((s) => ({
-      rank: s.rank,
-      team: s.team ?? "?",
-      manager: s.manager,
-      record: `${s.wins ?? 0}-${s.losses ?? 0}${s.ties ? `-${s.ties}` : ""}`,
-      points_for: s.points_for,
-      streak: s.streak,
-    })),
+    standings: standingsRows,
     previous_power_rankings: inputs.previous_power_rankings,
+    game_of_the_week: pickGameOfTheWeek(inputs.upcoming ?? null, standingsRows),
+    group_predictions: deriveGroupPredictions(inputs.poll ?? null, games),
     provenance: inputs.provenance,
     recent_transactions: transactions.transactions.slice(0, 10).map((t) => ({
       type: t.type,

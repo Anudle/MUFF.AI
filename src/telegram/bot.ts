@@ -36,6 +36,48 @@ export async function sendMessage(chatId: number, text: string): Promise<void> {
   }
 }
 
+/**
+ * MUFF-40 — Game of the Week poll. Non-anonymous so the chat itself shows who
+ * backed whom; the digest only ever sees counts (see stopPoll). Telegram caps
+ * `open_period`/`close_date` at 600 s, so a week-long poll can't self-close —
+ * the next Tuesday's run closes it.
+ */
+export async function sendPoll(
+  chatId: number,
+  question: string,
+  options: string[],
+): Promise<{ message_id: number; poll_id: string }> {
+  const res = await fetch(`${API}/sendPoll`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, question, options, is_anonymous: false }),
+  });
+  if (!res.ok) throw new Error(`Telegram sendPoll failed: ${res.status} ${await res.text()}`);
+  const body = (await res.json()) as { result: { message_id: number; poll: { id: string } } };
+  return { message_id: body.result.message_id, poll_id: body.result.poll.id };
+}
+
+/**
+ * Close a poll and return the final tally. Counts only: who voted arrives as
+ * `poll_answer` updates, which Telegram keeps for 24 h and nothing here
+ * consumes — a week later the names are gone, the numbers are not.
+ */
+export async function stopPoll(
+  chatId: number,
+  messageId: number,
+): Promise<{ options: { text: string; voter_count: number }[]; total_voter_count: number }> {
+  const res = await fetch(`${API}/stopPoll`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, message_id: messageId }),
+  });
+  if (!res.ok) throw new Error(`Telegram stopPoll failed: ${res.status} ${await res.text()}`);
+  const body = (await res.json()) as {
+    result: { options: { text: string; voter_count: number }[]; total_voter_count: number };
+  };
+  return body.result;
+}
+
 /** Route one update. This is the seam the LangGraph agent (ANU-13) plugs into. */
 export async function handleUpdate(update: TgUpdate): Promise<void> {
   const msg = update.message;

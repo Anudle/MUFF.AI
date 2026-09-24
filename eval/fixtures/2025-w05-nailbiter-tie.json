@@ -2,11 +2,6 @@
  "league": "Monarch United (synthetic)",
  "season": "2025",
  "week": 5,
- "provenance": {
-  "source": "synthetic",
-  "ingested_by": null,
-  "ingested_at": null
- },
  "results": [
   {
    "winner": "Anubis",
@@ -286,5 +281,46 @@
    "rank": 8,
    "team": "JustBoxes"
   }
- ]
+ ],
+ "game_of_the_week": {
+  "week": 6,
+  "teams": [
+   {
+    "team": "Cow Bellz",
+    "manager": null,
+    "record": "2-2-1",
+    "projected": 100.5
+   },
+   {
+    "team": "Super Mega Awesome ✨",
+    "manager": null,
+    "record": "3-2",
+    "projected": 98.2
+   }
+  ],
+  "projected_margin": 2.3
+ },
+ "group_predictions": {
+  "teams": [
+   {
+    "team": "Anubis",
+    "votes": 3,
+    "pct": 27
+   },
+   {
+    "team": "Tebow's Purity Ring",
+    "votes": 8,
+    "pct": 73
+   }
+  ],
+  "total_votes": 11,
+  "winner": "Anubis",
+  "majority_backed": "Tebow's Purity Ring",
+  "majority_right": false
+ },
+ "provenance": {
+  "source": "synthetic",
+  "ingested_by": null,
+  "ingested_at": null
+ }
 }

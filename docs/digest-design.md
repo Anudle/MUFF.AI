@@ -80,6 +80,53 @@ Rendering is code, not model output: layout consistency shouldn't depend on
 sampling. `*bold*` renders in both Telegram (`Markdown` parse mode) and
 WhatsApp, which is the copy-paste/forwarding story.
 
+## Game of the Week poll (MUFF-40)
+
+The digest was a broadcast; the poll makes it a loop. After the digest goes
+out, the run posts ONE native Telegram poll (`sendPoll`, non-anonymous) for
+the upcoming week's marquee matchup; the next Tuesday's run closes it
+(`stopPoll`) and the recap opens with receipts ("73% of you backed Barry. The
+27% were right."). Exactly one poll a week — a single Game of the Week is an
+event, seven polls is a chore.
+
+Where each decision lives, and why:
+
+- **Selection is code** (`pickGameOfTheWeek` in `facts.ts`): the upcoming
+  scoreboard's closest projected margin, tiebreak combined points-for. The
+  model never chooses — a "marquee" game picked by vibes can't be explained
+  to the chat, a projected margin can. Yahoo publishes projections for
+  `current_week` by Tuesday, so `gatherWeekFacts` fetches `week + 1` and
+  treats any failure (off-season, final week, fixture provider) as "no poll",
+  never as a failed digest.
+- **The tease is layout** (`render.ts`): teams, records, projections, "vote
+  below". The poll is a separate Telegram message, so the digest points at it
+  deterministically; the model is told not to mention it.
+- **Receipts are facts** (`deriveGroupPredictions`): the closed tally becomes
+  `group_predictions` with percentages computed in code, and the prompt has
+  the recap open with them. Nobody voted → `null` → the prompt says don't
+  mention polls at all, and `poll_receipts_grounded` in the eval fails any
+  prose that talks votes without a closed poll behind it.
+- **State rides with the rankings** (`history.ts`): the posting run records
+  `chat_id` + `message_id` under `polls["season:week"]`; the closing run
+  writes the `tally` back, so re-running a week reuses the count instead of
+  re-closing (Telegram 400s on a closed poll).
+- **Only a delivering run closes a poll** (`pollLookup` in `run.ts`). A
+  `npm run digest` dry run on Monday must not kill the chat's live vote, so
+  it reads a cached tally or reports "still open" and produces a digest
+  without receipts. The Tuesday text will differ from the rehearsal by one
+  sentence; that's the price of a safe rehearsal.
+- **The poll is posted after the digest and its failure is logged, not
+  thrown.** Ordering follows run.ts's rule: everything that can fail comes
+  before the send. Losing a poll is a shrug; losing the digest is not.
+
+Two Telegram constraints shaped this. `open_period`/`close_date` cap at 600 s,
+so a week-long poll cannot self-close at kickoff — votes cast after Thursday
+night count, and the chat polices that itself (the poll is non-anonymous, so
+everyone can see who voted when). And `stopPoll` returns counts only: who
+voted arrives as `poll_answer` updates that Telegram keeps for 24 h and no
+process here consumes, so the digest names the split, never the voters — the
+poll message itself shows the names.
+
 ## Model: Opus 4.8, no tiering
 
 The digest is the flagship artifact, runs ~17 times a season, and a run costs

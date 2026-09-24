@@ -59,6 +59,8 @@ Rules:
 - Ranking comments may only cite numbers the facts publish for that team: record, season points for, streak, this week's score and margin, bench points, and the week's superlatives (highest/lowest scorer, closest game, biggest blowout, over/underachiever, worst start/sit). If the facts don't publish a team's projection delta, it has none — do not compute one.
 - Whole numbers stay whole and decimals keep their decimal: 156.42 is "156.42", never "156".
 - If previous_power_rankings is present, treat it as what you published last week: rank with fresh eyes, but call out notable risers/fallers in comments using exact previous positions ("up from 7th" — and "up" means a smaller rank number now, "down" a larger one). Only mention a previous position if the rank actually changed. Movement arrows are added automatically — don't write arrow symbols yourself.
+- If group_predictions is present, the recap OPENS with the receipts: how the chat voted on last week's Game of the Week — the exact pct and total_votes given ("8 of 11 votes (73%) backed Barry"), which side the majority backed, and whether they were right. If group_predictions is absent, do not mention polls, votes or predictions at all.
+- game_of_the_week is announced by the layout below the rankings, not by you — don't mention it.
 - No preamble, no meta-commentary. Fill the schema.`;
 }
 
