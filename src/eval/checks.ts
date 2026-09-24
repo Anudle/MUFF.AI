@@ -101,10 +101,7 @@ function proseFields(d: Digest): [string, string][] {
   return [
     ["headline", d.headline],
     ["recap", d.recap],
-    ...d.game_notes.map((n, i): [string, string] => [`game_notes[${i}]`, n]),
-    ...d.trash_talk.map((t, i): [string, string] => [`trash_talk[${i}]`, t]),
     ...d.power_rankings.map((p, i): [string, string] => [`power_rankings[${i}].comment`, p.comment]),
-    ["waiver_watch", d.waiver_watch],
   ];
 }
 
@@ -129,26 +126,12 @@ export function evaluateRecord({ facts, digest, text }: EvalRecord): EvalReport 
   );
 
   // --- format: counts and coverage -------------------------------------------
+  // The recap is the only roast slot left (the digest was cut to headline +
+  // recap + rankings), so it must quote at least one stat.
   check(
-    "trash_talk_count",
-    digest.trash_talk.length >= 3 && digest.trash_talk.length <= 5,
-    `${digest.trash_talk.length} lines (want 3-5)`,
-  );
-
-  // Fresh non-global regex: .test() on a /g/ regex is stateful across calls.
-  const numberless = digest.trash_talk.filter((t) => !/\d/.test(t));
-  check(
-    "trash_talk_cites_numbers",
-    numberless.length === 0,
-    numberless.length === 0
-      ? "every roast quotes a stat"
-      : `line(s) with no number at all: ${numberless.map((t) => JSON.stringify(t)).join(", ")}`,
-  );
-
-  check(
-    "game_notes_count",
-    digest.game_notes.length === facts.results.length,
-    `${digest.game_notes.length} notes for ${facts.results.length} matchups`,
+    "recap_cites_numbers",
+    /\d/.test(digest.recap),
+    /\d/.test(digest.recap) ? "recap quotes a stat" : "recap has no number at all",
   );
 
   // Compare by teamKey, not raw string: the model writes "Tebow's" for Yahoo's
@@ -180,18 +163,20 @@ export function evaluateRecord({ facts, digest, text }: EvalRecord): EvalReport 
       : `arrows written by the model in: ${arrowed.map(([f]) => f).join(", ")}`,
   );
 
-  // A quiet wire must yield an empty waiver_watch — anything else is invented.
+  // "Up from 7th" on a team now ranked 8th: the number is real, the direction
+  // is wrong, and only a human would notice. Direction is arithmetic, so code
+  // checks it — "up" means a smaller rank number now, "down" a larger one.
+  const wrongWay = digest.power_rankings.flatMap((p) =>
+    [...p.comment.matchAll(/\b(up|down) from (\d+)(?:st|nd|rd|th)\b/gi)]
+      .filter(([, dir, was]) => (dir.toLowerCase() === "up" ? Number(was) <= p.rank : Number(was) >= p.rank))
+      .map(([phrase]) => `${p.team} (now ${p.rank}): "${phrase}"`),
+  );
   check(
-    "waiver_watch_grounded",
-    facts.recent_transactions.length > 0 || digest.waiver_watch.trim() === "",
-    facts.recent_transactions.length > 0
-      ? `${facts.recent_transactions.length} transaction(s) available to talk about`
-      : digest.waiver_watch.trim() === ""
-        ? "no transactions, waiver watch correctly empty"
-        : `no transactions in facts, yet waiver_watch says: ${JSON.stringify(digest.waiver_watch)}`,
+    "movement_direction",
+    wrongWay.length === 0,
+    wrongWay.length === 0 ? "every up/down claim matches the rank" : `direction contradicts the rank — ${wrongWay.join(", ")}`,
   );
 
-  // --- format: the rendered message ------------------------------------------
   check(
     "telegram_length",
     text.length > 0 && text.length <= TELEGRAM_MESSAGE_LIMIT,

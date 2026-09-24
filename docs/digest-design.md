@@ -52,11 +52,29 @@ the real league.
 
 `client.messages.parse()` + `zodOutputFormat(DigestSchema)` →
 `output_config.format` JSON-schema enforcement. The schema guarantees the
-digest always has its sections (headline, recap, game notes, trash talk, power
-rankings, waiver watch) with the right types — so `render.ts` can never break
-on a malformed response. What the schema *can't* enforce (that each roast cites
-a real number) lives in the system prompt. Know which layer owns which
-guarantee.
+digest always has its sections (headline, recap, power rankings) with the
+right types — so `render.ts` can never break on a malformed response. What the
+schema *can't* enforce (that the recap's roast cites a real number) lives in
+the system prompt. Know which layer owns which guarantee.
+
+## Three sections, not six
+
+The first two live weeks shipped headline + recap + a game note per matchup +
+3-5 trash-talk lines + rankings + waiver watch: ~3,500 characters, and it read
+like a report, not a group-chat message. Week 3 cut it to headline, recap and
+power rankings. The recap carries the week's story and its one screenshot-worthy
+roast; the ranking comments (one line per team) are where everyone else gets
+theirs — that section already *was* the trash talk. Game notes duplicated the
+Yahoo scoreboard everyone has open anyway, and waiver watch narrated
+transactions nobody asked about. `recent_transactions` stays in the facts (the
+model can still cite a pickup in a ranking comment) but has no section of its
+own.
+
+Eval consequence: the golden records from weeks 1-2 carry the old six-field
+digest. They still score, because the checker only reads the three fields the
+shapes share — the extra fields are ignored, and the format checks that
+depended on them (`game_notes_count`, `trash_talk_*`, `waiver_watch_grounded`)
+are gone with the sections.
 
 Rendering is code, not model output: layout consistency shouldn't depend on
 sampling. `*bold*` renders in both Telegram (`Markdown` parse mode) and

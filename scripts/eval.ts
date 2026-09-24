@@ -39,7 +39,22 @@ const explicit = args.filter((a) => !a.startsWith("--"));
 
 let failures = 0;
 
-function report(label: string, r: EvalReport, expectFail?: string) {
+/**
+ * eval/known-failures.json — checks a golden record is KNOWN to fail
+ * because the check postdates the run (see the file's _readme). Scoped per
+ * record + check id, so nothing else about the record is excused.
+ */
+const KNOWN_FAILURES: Record<string, Record<string, string>> = (() => {
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(process.cwd(), "eval", "known-failures.json"), "utf8"));
+    delete raw._readme;
+    return raw;
+  } catch {
+    return {};
+  }
+})();
+
+function report(label: string, r: EvalReport, expectFail?: string, known: Record<string, string> = {}) {
   if (expectFail) {
     // A corrupted digest must fail the named check — and only make it visible.
     const target = r.checks.find((c) => c.id === expectFail);
@@ -51,11 +66,15 @@ function report(label: string, r: EvalReport, expectFail?: string) {
     }
     return;
   }
-  console.log(`  ${r.pass ? "PASS" : "FAIL"}  ${label}`);
-  for (const c of r.checks.filter((c) => !c.ok)) {
-    console.log(`        ${c.id}: ${c.detail}`);
+  const failing = r.checks.filter((c) => !c.ok);
+  const unexpected = failing.filter((c) => !(c.id in known));
+  const pass = unexpected.length === 0;
+  console.log(`  ${pass ? "PASS" : "FAIL"}  ${label}`);
+  for (const c of failing) {
+    const tag = c.id in known ? "known: " : "";
+    console.log(`        ${tag}${c.id}: ${c.detail}`);
   }
-  if (!r.pass) failures++;
+  if (!pass) failures++;
 }
 
 function jsonFiles(dir: string): string[] {
@@ -97,6 +116,8 @@ for (const file of recordFiles) {
   report(
     `${path.relative(process.cwd(), file)} (${run.season} w${run.week})`,
     evaluateRecord({ facts: run.facts, digest: run.digest, text: run.text }),
+    undefined,
+    KNOWN_FAILURES[path.basename(file)] ?? {},
   );
 }
 if (recordFiles.length === 0) {

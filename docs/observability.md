@@ -102,10 +102,11 @@ PR) → **LLM-as-judge** for tone/quality (costs a call, not built yet) →
   too (MUFF-60): the dry run's "enough to beat *five* other teams" sailed past
   a digits-only regex. Known blind spot, same as for digits: any value that
   is also a standings rank (1..N) is always allowed.
-- **Format** — 3-5 trash-talk lines, each citing a number; one game note per
-  matchup; power rankings covering all teams with ranks 1..N exactly once; no
-  model-authored movement arrows (render.ts owns those); empty waiver watch
-  when the facts show no transactions; rendered text within Telegram's 4096.
+- **Format** — the recap cites at least one number (it is the only roast
+  slot besides the rankings); power rankings covering all teams with ranks
+  1..N exactly once; no model-authored movement arrows (render.ts owns
+  those); an "up from Nth"/"down from Nth" claim must point the way the
+  rank actually moved; rendered text within Telegram's 4096.
   Team names are matched by `teamKey()` (`src/digest/team-names.ts`), not raw
   equality: Yahoo sends `Tebow’s Purity Ring` (U+2019) and the model writes
   `Tebow's` (U+0027), which made every real week-1 run fail this check as

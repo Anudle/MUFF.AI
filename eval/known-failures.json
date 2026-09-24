@@ -1,0 +1,6 @@
+{
+  "_readme": "Golden records are real runs frozen as they shipped. When a check added LATER catches a bug in one, the record stays (its facts still drive the --live regen) and the failure is recorded here so the gate stays green without loosening the check. Key = record filename, value = { check id: why }. Any OTHER failing check still fails the run.",
+  "2026-w02-20260922T130110Z.json": {
+    "movement_direction": "Shipped 2026-09-22 with \"up from 12th\" on a team still ranked 12th. The check was added 2026-09-24 (PR #26); the digest went out before it existed."
+  }
+}
