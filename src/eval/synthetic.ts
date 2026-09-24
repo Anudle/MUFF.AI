@@ -33,39 +33,28 @@ export function buildGroundedDigest(facts: WeekFacts): Digest {
       `${hi.team} led the week with ${hi.points}.` +
       (facts.biggest_blowout
         ? ` ${facts.biggest_blowout.winner} beat ${facts.biggest_blowout.loser} by ${facts.biggest_blowout.margin}.`
-        : ""),
-    game_notes: facts.results.map((g) => {
-      const [a, b] = g.teams;
-      return `${a?.team} ${a?.points} — ${b?.points} ${b?.team}${g.is_tied ? " (tie)" : ""}`;
-    }),
-    trash_talk: [
-      `${lo.team} managed ${lo.points} points, the floor of the week.`,
-      `${bench.team} left ${bench.bench_points} points sitting on the bench.`,
-      `${under.team} came in ${Math.abs(under.delta)} under projection.`,
-    ],
+        : "") +
+      ` ${lo.team} managed ${lo.points} points, the floor of the week.` +
+      ` ${bench.team} left ${bench.bench_points} points sitting on the bench.` +
+      ` ${under.team} came in ${Math.abs(under.delta)} under projection.`,
     power_rankings: facts.standings.map((s, i) => ({
       rank: s.rank ?? i + 1,
       team: s.team,
       comment: `${s.record}, ${s.points_for} points for.`,
     })),
-    waiver_watch: facts.recent_transactions.length > 0 ? "The wire stayed busy this week." : "",
   };
 }
 
 /**
- * Same digest, one hallucinated stat: the first number in the first roast is
+ * Same digest, one hallucinated stat: the first number in the recap is
  * replaced with a value guaranteed absent from `allowed`.
  */
 export function corruptDigest(digest: Digest, allowed: Set<number>): Digest {
   let fake = 777.77;
   while (allowed.has(fake) || allowed.has(Math.round(fake * 10) / 10)) fake += 11.11;
 
-  const line = digest.trash_talk[0];
-  const match = line?.match(/\d+(?:\.\d+)?/);
-  if (!line || !match) throw new Error("Synthetic digest has no number to corrupt.");
+  const match = digest.recap.match(/\d+(?:\.\d+)?/);
+  if (!match) throw new Error("Synthetic digest has no number to corrupt.");
 
-  return {
-    ...digest,
-    trash_talk: [line.replace(match[0], fake.toFixed(2)), ...digest.trash_talk.slice(1)],
-  };
+  return { ...digest, recap: digest.recap.replace(match[0], fake.toFixed(2)) };
 }
