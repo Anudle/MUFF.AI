@@ -55,6 +55,9 @@ export async function handler(event: DigestEvent | null | undefined) {
     // generations it took (2 = the first one failed and was regenerated).
     gate_pass: result.gate.pass,
     generations: result.gate.attempts.length,
+    // MUFF-40: did the Game of the Week poll go out, and how many voted last week.
+    poll_posted: result.poll_posted,
+    poll_votes: result.poll_votes,
     cost_usd: result.cost.cost_usd,
     model: result.cost.model,
     input_tokens: result.cost.input_tokens,

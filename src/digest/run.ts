@@ -15,9 +15,9 @@ import { archiveRun, type GateResult } from "./archive.ts";
 import { addCosts, type RunCost } from "./cost.ts";
 import { evaluateRecord } from "../eval/checks.ts";
 import type { Provenance } from "../mcp/provider.ts";
-import { gatherWeekFacts } from "./facts.ts";
+import { gatherWeekFacts, type PollLookup } from "./facts.ts";
 import { generateDigest } from "./generate.ts";
-import { savePowerRankings } from "./history.ts";
+import { loadPoll, savePoll, savePowerRankings, type PollTally } from "./history.ts";
 import { renderDigest } from "./render.ts";
 
 /**
@@ -45,6 +45,42 @@ export interface DigestRunResult {
   archived: string | null;
   /** Where the week's numbers came from (MUFF-58) — surfaced for the log line. */
   provenance: Provenance;
+  /** MUFF-40: total votes in the poll this run closed (null: no poll / dry run). */
+  poll_votes: number | null;
+  /** MUFF-40: whether a Game of the Week poll went out after the digest. */
+  poll_posted: boolean;
+}
+
+/**
+ * MUFF-40: last week's poll, closed and counted. Only a delivering run closes
+ * a live poll — a dry run reads the cached tally or reports nothing, so
+ * rehearsing Tuesday never kills the chat's open vote. Failures here are
+ * logged, not thrown: receipts are a garnish, the digest is the meal.
+ */
+function pollLookup(close: boolean): PollLookup {
+  return async (season, week): Promise<PollTally | null> => {
+    const posted = await loadPoll(season, week);
+    if (!posted) return null;
+    if (posted.tally) return posted.tally;
+    if (!close) {
+      progress(`Poll for week ${week} is still open — receipts only on a delivering run.`);
+      return null;
+    }
+    try {
+      const { stopPoll } = await import("../telegram/bot.ts");
+      const result = await stopPoll(posted.chat_id, posted.message_id);
+      const tally: PollTally = {
+        options: result.options.map((o, i) => ({ team: posted.options[i] ?? o.text, votes: o.voter_count })),
+        closed_at: new Date().toISOString(),
+      };
+      await savePoll(season, week, { ...posted, tally });
+      progress(`Closed week ${week} poll: ${tally.options.map((o) => `${o.team} ${o.votes}`).join(", ")}.`);
+      return tally;
+    } catch (e) {
+      console.error(`Could not close week ${week} poll (skipping receipts):`, e);
+      return null;
+    }
+  };
 }
 
 export async function runDigest(opts: {
@@ -55,7 +91,7 @@ export async function runDigest(opts: {
   const startedAt = new Date();
 
   progress(`Gathering facts${opts.week ? ` for week ${opts.week}` : ""}…`);
-  const facts = await gatherWeekFacts(opts.week);
+  const facts = await gatherWeekFacts(opts.week, { poll: pollLookup(opts.send) });
   progress(
     `Week ${facts.week}: ${facts.results.length} matchups, ` +
       `${facts.bench_points.length} rosters, ` +
@@ -107,13 +143,37 @@ export async function runDigest(opts: {
   });
 
   let sentTo: number | null = null;
+  let pollPosted = false;
   if (opts.send) {
     const chatId = Number(process.env.TELEGRAM_CHAT_ID);
     if (!chatId) throw new Error("Set TELEGRAM_CHAT_ID to deliver the digest.");
-    const { sendMessage } = await import("../telegram/bot.ts");
+    const { sendMessage, sendPoll } = await import("../telegram/bot.ts");
     await sendMessage(chatId, text);
     progress(`Sent to Telegram chat ${chatId}.`);
     sentTo = chatId;
+
+    // MUFF-40: the poll follows the digest. It is posted AFTER the digest is
+    // safely out and its failure is logged, not thrown — the league losing a
+    // poll is a shrug, losing the digest is not.
+    const game = facts.game_of_the_week;
+    if (game) {
+      try {
+        const options = game.teams.map((t) => t.team);
+        const { message_id, poll_id } = await sendPoll(chatId, `🎯 Game of the Week ${game.week}: who wins?`, options);
+        await savePoll(facts.season, game.week, {
+          chat_id: chatId,
+          message_id,
+          poll_id,
+          week: game.week,
+          options,
+          posted_at: new Date().toISOString(),
+        });
+        pollPosted = true;
+        progress(`Posted Game of the Week poll for week ${game.week}: ${options.join(" vs ")}.`);
+      } catch (e) {
+        console.error("Game of the Week poll failed (digest already delivered):", e);
+      }
+    }
   }
 
   return {
@@ -127,5 +187,7 @@ export async function runDigest(opts: {
     duration_ms: durationMs,
     archived,
     provenance: facts.provenance,
+    poll_votes: facts.group_predictions?.total_votes ?? null,
+    poll_posted: pollPosted,
   };
 }

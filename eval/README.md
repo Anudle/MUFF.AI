@@ -7,7 +7,7 @@ handle:
 | Fixture | Scenario it pins down |
 |---|---|
 | `2025-w01-blowout` | 85-point blowout, cold start (`previous_power_rankings: null`) |
-| `2025-w05-nailbiter-tie` | 0.36 margin, plus a tie (`winner: null`) |
+| `2025-w05-nailbiter-tie` | 0.36 margin, plus a tie (`winner: null`); also the only fixture with a closed poll (`group_predictions`: 73% backed the loser) and an upcoming `game_of_the_week`, so the receipts path and the no-poll path are both exercised |
 | `2025-w09-quiet-week` | zero transactions — waiver watch must stay empty |
 | `2025-w11-start-sit-blunder` | 31.7-point bench blunder that flipped a result |
 

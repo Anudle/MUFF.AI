@@ -130,3 +130,23 @@ invoke manually after.
 - `aws lambda get-function-configuration … --query Environment.Variables.FANTASY_PROVIDER` — must be `fixture`; if not, step 4 didn't run from a shell with the variable set (a shell export beats `.env`).
 - `aws s3 ls s3://muff-digest-history-998716768903/fixtures/weekly/` — the newest key is the week it will serve; a fixture keyed to the wrong season or week sorts wrong.
 - The fixture provider refuses `get_roster`/`get_matchup` by design; the digest never calls them, so that error means an agent, not the digest.
+
+## Game of the Week poll (MUFF-40)
+
+The `MUFF_RUN` line carries `poll_posted` (this week's poll went out after the
+digest) and `poll_votes` (how many voted in the poll this run closed; `null`
+when there was none).
+
+- **`poll_posted: false` on a delivered run** — either Yahoo had no
+  projections for the upcoming week yet (off-season / final week: expected),
+  or `sendPoll` failed after the digest was delivered: look for "Game of the
+  Week poll failed" in the log. The digest is fine; post the poll by hand if
+  you care.
+- **No receipts in the recap although people voted** — the closing run
+  couldn't `stopPoll` ("Could not close week N poll" in the log; a poll
+  already closed by hand 400s). The tally is never lost: close it in Telegram
+  and the counts stay visible on the message.
+- **Rehearsing with `npm run digest` on Monday** never closes the live poll
+  (only a delivering run does), so the rehearsal has no receipts sentence.
+  That is expected, not a bug.
+

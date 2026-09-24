@@ -102,6 +102,9 @@ PR) → **LLM-as-judge** for tone/quality (costs a call, not built yet) →
   too (MUFF-60): the dry run's "enough to beat *five* other teams" sailed past
   a digits-only regex. Known blind spot, same as for digits: any value that
   is also a standings rank (1..N) is always allowed.
+- **Poll receipts grounded** (MUFF-40) — prose may talk votes, polls or
+  percentages only when `group_predictions` is in the facts (a closed poll
+  with at least one vote).
 - **Format** — the recap cites at least one number (it is the only roast
   slot besides the rankings); power rankings covering all teams with ranks
   1..N exactly once; no model-authored movement arrows (render.ts owns

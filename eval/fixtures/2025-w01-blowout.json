@@ -2,11 +2,6 @@
  "league": "Monarch United (synthetic)",
  "season": "2025",
  "week": 1,
- "provenance": {
-  "source": "synthetic",
-  "ingested_by": null,
-  "ingested_at": null
- },
  "results": [
   {
    "winner": "This One's for John",
@@ -248,5 +243,12 @@
    "summary": "Tucker Kraft (TE) add: FA → JustBoxes"
   }
  ],
- "previous_power_rankings": null
+ "previous_power_rankings": null,
+ "game_of_the_week": null,
+ "group_predictions": null,
+ "provenance": {
+  "source": "synthetic",
+  "ingested_by": null,
+  "ingested_at": null
+ }
 }

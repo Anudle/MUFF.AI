@@ -2,11 +2,6 @@
  "league": "Monarch United (synthetic)",
  "season": "2025",
  "week": 11,
- "provenance": {
-  "source": "synthetic",
-  "ingested_by": null,
-  "ingested_at": null
- },
  "results": [
   {
    "winner": "This One's for John",
@@ -281,5 +276,12 @@
    "rank": 8,
    "team": "JustBoxes"
   }
- ]
+ ],
+ "game_of_the_week": null,
+ "group_predictions": null,
+ "provenance": {
+  "source": "synthetic",
+  "ingested_by": null,
+  "ingested_at": null
+ }
 }

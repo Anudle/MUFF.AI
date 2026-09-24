@@ -177,6 +177,20 @@ export function evaluateRecord({ facts, digest, text }: EvalRecord): EvalReport 
     wrongWay.length === 0 ? "every up/down claim matches the rank" : `direction contradicts the rank — ${wrongWay.join(", ")}`,
   );
 
+  // MUFF-40: receipts need a closed poll. Prose about votes with no
+  // group_predictions in the facts is a poll the model made up.
+  const pollTalk = proseFields(digest).filter(([, v]) => /%|\bvot(?:e|ed|es|ing)\b|\bpoll\b/i.test(v));
+  check(
+    "poll_receipts_grounded",
+    facts.group_predictions != null || pollTalk.length === 0,
+    facts.group_predictions != null
+      ? `poll closed with ${facts.group_predictions.total_votes} vote(s), receipts allowed`
+      : pollTalk.length === 0
+        ? "no poll in facts, no poll talk in prose"
+        : `no poll in facts, yet prose talks votes in: ${pollTalk.map(([f]) => f).join(", ")}`,
+  );
+
+  // --- format: the rendered message ------------------------------------------
   check(
     "telegram_length",
     text.length > 0 && text.length <= TELEGRAM_MESSAGE_LIMIT,
