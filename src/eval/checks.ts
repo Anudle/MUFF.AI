@@ -163,7 +163,20 @@ export function evaluateRecord({ facts, digest, text }: EvalRecord): EvalReport 
       : `arrows written by the model in: ${arrowed.map(([f]) => f).join(", ")}`,
   );
 
-  // --- format: the rendered message ------------------------------------------
+  // "Up from 7th" on a team now ranked 8th: the number is real, the direction
+  // is wrong, and only a human would notice. Direction is arithmetic, so code
+  // checks it — "up" means a smaller rank number now, "down" a larger one.
+  const wrongWay = digest.power_rankings.flatMap((p) =>
+    [...p.comment.matchAll(/\b(up|down) from (\d+)(?:st|nd|rd|th)\b/gi)]
+      .filter(([, dir, was]) => (dir.toLowerCase() === "up" ? Number(was) <= p.rank : Number(was) >= p.rank))
+      .map(([phrase]) => `${p.team} (now ${p.rank}): "${phrase}"`),
+  );
+  check(
+    "movement_direction",
+    wrongWay.length === 0,
+    wrongWay.length === 0 ? "every up/down claim matches the rank" : `direction contradicts the rank — ${wrongWay.join(", ")}`,
+  );
+
   check(
     "telegram_length",
     text.length > 0 && text.length <= TELEGRAM_MESSAGE_LIMIT,

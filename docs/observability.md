@@ -105,7 +105,8 @@ PR) → **LLM-as-judge** for tone/quality (costs a call, not built yet) →
 - **Format** — the recap cites at least one number (it is the only roast
   slot besides the rankings); power rankings covering all teams with ranks
   1..N exactly once; no model-authored movement arrows (render.ts owns
-  those); rendered text within Telegram's 4096.
+  those); an "up from Nth"/"down from Nth" claim must point the way the
+  rank actually moved; rendered text within Telegram's 4096.
   Team names are matched by `teamKey()` (`src/digest/team-names.ts`), not raw
   equality: Yahoo sends `Tebow’s Purity Ring` (U+2019) and the model writes
   `Tebow's` (U+0027), which made every real week-1 run fail this check as

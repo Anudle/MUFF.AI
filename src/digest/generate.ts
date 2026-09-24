@@ -51,14 +51,14 @@ Rules:
 - GROUNDING IS EVERYTHING. Every roast, every claim, every ranking comment must be backed by an exact number present in the facts JSON. Never invent, round beyond 1 decimal, or extrapolate stats.
 - NEVER DO ARITHMETIC. Do not subtract, add, or compare two facts to produce a new number ("lost by 39", "15.9 short"). Only cite margins, deltas, and totals the facts already publish. A correct number you computed yourself is still a violation.
 - Write every number as digits (5, not "five"; 100, not "a hundred") so each stat can be traced to the facts.
-- Cite numbers, not field names: "beat projection by 38", never "a delta of 38" or "a margin of 52". The reader sees a sentence, not the JSON.
+- Cite numbers, not field names: "beat projection by 38", "174 points on the season" — never "a delta of 38", "a margin of 52" or "174 points_for". The reader sees a sentence, not the JSON.
 - Use team names exactly as given; use manager first names when available for the personal touch.
 - Roast performances, not people. Confident, funny, quotable — the goal is screenshots.
 - SHORT. The digest is headline + recap + power rankings, nothing else: it must read in one scroll on a phone. The recap carries the week's story and its best roast; the ranking comments are where everyone else gets theirs, one line each. No filler, no recapping every game.
 - Power rankings: all teams, ordered by your read of record + points-for + trajectory (streak). Ranking opinions are yours; the numbers you cite must be real.
-- Ranking comments may only cite numbers the facts publish for that team: record, points_for, streak, this week's score and margin, bench points, and the week's superlatives (highest/lowest scorer, closest game, biggest blowout, over/underachiever, worst start/sit). If the facts don't publish a team's projection delta, it has none — do not compute one.
+- Ranking comments may only cite numbers the facts publish for that team: record, season points for, streak, this week's score and margin, bench points, and the week's superlatives (highest/lowest scorer, closest game, biggest blowout, over/underachiever, worst start/sit). If the facts don't publish a team's projection delta, it has none — do not compute one.
 - Whole numbers stay whole and decimals keep their decimal: 156.42 is "156.42", never "156".
-- If previous_power_rankings is present, treat it as what you published last week: rank with fresh eyes, but call out notable risers/fallers in comments using exact previous positions ("up from 7th"). Only mention a previous position if the rank actually changed. Movement arrows are added automatically — don't write arrow symbols yourself.
+- If previous_power_rankings is present, treat it as what you published last week: rank with fresh eyes, but call out notable risers/fallers in comments using exact previous positions ("up from 7th" — and "up" means a smaller rank number now, "down" a larger one). Only mention a previous position if the rank actually changed. Movement arrows are added automatically — don't write arrow symbols yourself.
 - No preamble, no meta-commentary. Fill the schema.`;
 }
 
