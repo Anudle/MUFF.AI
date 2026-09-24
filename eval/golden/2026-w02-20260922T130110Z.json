@@ -1,0 +1,604 @@
+{
+ "run_id": "64f65a78-0593-4ad3-9672-4062a47a5e3d",
+ "started_at": "2026-09-22T13:00:38.761Z",
+ "finished_at": "2026-09-22T13:01:10.275Z",
+ "duration_ms": 31514,
+ "season": "2026",
+ "week": 2,
+ "delivery_attempted": true,
+ "cost": {
+  "model": "claude-opus-4-8",
+  "input_tokens": 5830,
+  "output_tokens": 1686,
+  "cache_write_tokens": 0,
+  "cache_read_tokens": 0,
+  "cost_usd": 0.0713
+ },
+ "facts": {
+  "league": "Monarch United Fantasy",
+  "season": "2026",
+  "week": 2,
+  "results": [
+   {
+    "winner": "Tuten Under the Covers",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "Garipp Bowls",
+      "manager": null,
+      "points": 45,
+      "projected": 61
+     },
+     {
+      "team": "Tuten Under the Covers",
+      "manager": "kevin C",
+      "points": 47,
+      "projected": 58
+     }
+    ],
+    "margin": 2
+   },
+   {
+    "winner": "LUCAS'S LUCKY LIONS",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "Calvins Cutthroats",
+      "manager": "Dan",
+      "points": 40,
+      "projected": 66
+     },
+     {
+      "team": "LUCAS'S LUCKY LIONS",
+      "manager": "Lucas",
+      "points": 57,
+      "projected": 62
+     }
+    ],
+    "margin": 17
+   },
+   {
+    "winner": "Anubis",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "Cow Bellz",
+      "manager": "Kyle",
+      "points": 42,
+      "projected": 67
+     },
+     {
+      "team": "Anubis",
+      "manager": "Anu",
+      "points": 82,
+      "projected": 67
+     }
+    ],
+    "margin": 40
+   },
+   {
+    "winner": "This One's for John",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "The Baker Mayfields",
+      "manager": "Barry",
+      "points": 65,
+      "projected": 70
+     },
+     {
+      "team": "This One's for John",
+      "manager": "David",
+      "points": 69,
+      "projected": 67
+     }
+    ],
+    "margin": 4
+   },
+   {
+    "winner": "Tebow’s Purity Ring",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "JustBoxes",
+      "manager": "kyle",
+      "points": 40,
+      "projected": 56
+     },
+     {
+      "team": "Tebow’s Purity Ring",
+      "manager": "Ankit",
+      "points": 92,
+      "projected": 59
+     }
+    ],
+    "margin": 52
+   },
+   {
+    "winner": "O-moss-em",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "Leapfrog Clause",
+      "manager": "Matt",
+      "points": 63,
+      "projected": 56
+     },
+     {
+      "team": "O-moss-em",
+      "manager": "Michael",
+      "points": 100,
+      "projected": 62
+     }
+    ],
+    "margin": 37
+   },
+   {
+    "winner": "TN Gamblers",
+    "is_tied": false,
+    "teams": [
+     {
+      "team": "Super Mega Awesome ✨",
+      "manager": "Jason",
+      "points": 30,
+      "projected": 55
+     },
+     {
+      "team": "TN Gamblers",
+      "manager": "TN",
+      "points": 48,
+      "projected": 63
+     }
+    ],
+    "margin": 18
+   }
+  ],
+  "highest_scorer": {
+   "team": "O-moss-em",
+   "points": 100
+  },
+  "lowest_scorer": {
+   "team": "Super Mega Awesome ✨",
+   "points": 30
+  },
+  "closest_game": {
+   "teams": [
+    "Garipp Bowls",
+    "Tuten Under the Covers"
+   ],
+   "margin": 2
+  },
+  "biggest_blowout": {
+   "winner": "Tebow’s Purity Ring",
+   "loser": "JustBoxes",
+   "margin": 52
+  },
+  "overachiever": {
+   "team": "O-moss-em",
+   "delta": 38
+  },
+  "underachiever": {
+   "team": "Calvins Cutthroats",
+   "delta": -26
+  },
+  "bench_points": [
+   {
+    "team": "Garipp Bowls",
+    "manager": null,
+    "bench_points": 52
+   },
+   {
+    "team": "Tebow’s Purity Ring",
+    "manager": "Ankit",
+    "bench_points": 40
+   },
+   {
+    "team": "JustBoxes",
+    "manager": "kyle",
+    "bench_points": 34
+   },
+   {
+    "team": "Cow Bellz",
+    "manager": "Kyle",
+    "bench_points": 33
+   },
+   {
+    "team": "The Baker Mayfields",
+    "manager": "Barry",
+    "bench_points": 31
+   },
+   {
+    "team": "LUCAS'S LUCKY LIONS",
+    "manager": "Lucas",
+    "bench_points": 29
+   },
+   {
+    "team": "This One's for John",
+    "manager": "David",
+    "bench_points": 28
+   },
+   {
+    "team": "Calvins Cutthroats",
+    "manager": "Dan",
+    "bench_points": 27
+   },
+   {
+    "team": "Tuten Under the Covers",
+    "manager": "kevin C",
+    "bench_points": 27
+   },
+   {
+    "team": "Leapfrog Clause",
+    "manager": "Matt",
+    "bench_points": 18
+   },
+   {
+    "team": "TN Gamblers",
+    "manager": "TN",
+    "bench_points": 15
+   },
+   {
+    "team": "Anubis",
+    "manager": "Anu",
+    "bench_points": 12
+   },
+   {
+    "team": "Super Mega Awesome ✨",
+    "manager": "Jason",
+    "bench_points": 5
+   },
+   {
+    "team": "O-moss-em",
+    "manager": "Michael",
+    "bench_points": 5
+   }
+  ],
+  "worst_start_sit": {
+   "team": "Garipp Bowls",
+   "manager": null,
+   "benched": {
+    "name": "Drew Lock",
+    "points": 22
+   },
+   "started": {
+    "name": "Carson Wentz",
+    "slot": "QB",
+    "points": 2
+   },
+   "delta": 20,
+   "would_have_flipped_result": true
+  },
+  "standings": [
+   {
+    "rank": 1,
+    "team": "O-moss-em",
+    "manager": "Michael",
+    "record": "2-0",
+    "points_for": 174,
+    "streak": "W2"
+   },
+   {
+    "rank": 2,
+    "team": "This One's for John",
+    "manager": "David",
+    "record": "2-0",
+    "points_for": 133,
+    "streak": "W2"
+   },
+   {
+    "rank": 3,
+    "team": "Tuten Under the Covers",
+    "manager": "kevin C",
+    "record": "2-0",
+    "points_for": 107,
+    "streak": "W2"
+   },
+   {
+    "rank": 4,
+    "team": "Leapfrog Clause",
+    "manager": "Matt",
+    "record": "1-1",
+    "points_for": 167,
+    "streak": "L1"
+   },
+   {
+    "rank": 5,
+    "team": "Tebow’s Purity Ring",
+    "manager": "Ankit",
+    "record": "1-1",
+    "points_for": 151,
+    "streak": "W1"
+   },
+   {
+    "rank": 6,
+    "team": "Garipp Bowls",
+    "manager": null,
+    "record": "1-1",
+    "points_for": 142,
+    "streak": "L1"
+   },
+   {
+    "rank": 7,
+    "team": "JustBoxes",
+    "manager": "kyle",
+    "record": "1-1",
+    "points_for": 131,
+    "streak": "L1"
+   },
+   {
+    "rank": 8,
+    "team": "Anubis",
+    "manager": "Anu",
+    "record": "1-1",
+    "points_for": 125,
+    "streak": "W1"
+   },
+   {
+    "rank": 9,
+    "team": "Cow Bellz",
+    "manager": "Kyle",
+    "record": "1-1",
+    "points_for": 120,
+    "streak": "L1"
+   },
+   {
+    "rank": 10,
+    "team": "TN Gamblers",
+    "manager": "TN",
+    "record": "1-1",
+    "points_for": 115,
+    "streak": "W1"
+   },
+   {
+    "rank": 11,
+    "team": "LUCAS'S LUCKY LIONS",
+    "manager": "Lucas",
+    "record": "1-1",
+    "points_for": 114,
+    "streak": "W1"
+   },
+   {
+    "rank": 12,
+    "team": "The Baker Mayfields",
+    "manager": "Barry",
+    "record": "0-2",
+    "points_for": 138,
+    "streak": "L2"
+   },
+   {
+    "rank": 13,
+    "team": "Calvins Cutthroats",
+    "manager": "Dan",
+    "record": "0-2",
+    "points_for": 99,
+    "streak": "L2"
+   },
+   {
+    "rank": 14,
+    "team": "Super Mega Awesome ✨",
+    "manager": "Jason",
+    "record": "0-2",
+    "points_for": 51,
+    "streak": "L2"
+   }
+  ],
+  "previous_power_rankings": [
+   {
+    "rank": 1,
+    "team": "Leapfrog Clause"
+   },
+   {
+    "rank": 2,
+    "team": "Garipp Bowls"
+   },
+   {
+    "rank": 3,
+    "team": "JustBoxes"
+   },
+   {
+    "rank": 4,
+    "team": "Cow Bellz"
+   },
+   {
+    "rank": 5,
+    "team": "O-moss-em"
+   },
+   {
+    "rank": 6,
+    "team": "The Baker Mayfields"
+   },
+   {
+    "rank": 7,
+    "team": "TN Gamblers"
+   },
+   {
+    "rank": 8,
+    "team": "This One's for John"
+   },
+   {
+    "rank": 9,
+    "team": "Tuten Under the Covers"
+   },
+   {
+    "rank": 10,
+    "team": "Calvins Cutthroats"
+   },
+   {
+    "rank": 11,
+    "team": "Tebow's Purity Ring"
+   },
+   {
+    "rank": 12,
+    "team": "LUCAS'S LUCKY LIONS"
+   },
+   {
+    "rank": 13,
+    "team": "Anubis"
+   },
+   {
+    "rank": 14,
+    "team": "Super Mega Awesome ✨"
+   }
+  ],
+  "provenance": {
+   "source": "yahoo",
+   "ingested_by": null,
+   "ingested_at": null
+  },
+  "recent_transactions": [
+   {
+    "type": "add/drop",
+    "date": "2026-09-22",
+    "summary": "Braelon Allen (RB) add: freeagents → O-moss-em; Ja'Kobi Lane (WR) drop: O-moss-em → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-22",
+    "summary": "Packers (DEF) add: freeagents → Anubis; Tyrone Tracy Jr. (RB) drop: Anubis → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-22",
+    "summary": "Chiefs (DEF) add: freeagents → Garipp Bowls; Daniel Jones (QB) drop: Garipp Bowls → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-22",
+    "summary": "Jameis Winston (QB) add: freeagents → Tuten Under the Covers; Eli Raridon (TE) drop: Tuten Under the Covers → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-21",
+    "summary": "Oronde Gadsden (TE) add: freeagents → Tuten Under the Covers; Mike Washington Jr. (RB) drop: Tuten Under the Covers → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-21",
+    "summary": "Harrison Butker (K) add: freeagents → Leapfrog Clause; Chris Boswell (K) drop: Leapfrog Clause → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-21",
+    "summary": "Kirk Cousins (QB) add: freeagents → Garipp Bowls; Carson Wentz (QB) drop: Garipp Bowls → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-21",
+    "summary": "Eli Raridon (TE) add: freeagents → Tuten Under the Covers; Evan Engram (TE) drop: Tuten Under the Covers → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-21",
+    "summary": "Emanuel Wilson (RB) add: freeagents → Anubis; Isiah Pacheco (RB) drop: Anubis → freeagents"
+   },
+   {
+    "type": "add/drop",
+    "date": "2026-09-21",
+    "summary": "Drew Lock (QB) add: freeagents → Garipp Bowls; Alec Pierce (WR) drop: Garipp Bowls → freeagents"
+   }
+  ]
+ },
+ "digest": {
+  "headline": "O-moss-em Hits 100 While Super Mega Awesome Forgets to Show Up",
+  "recap": "Michael's O-moss-em dropped a league-high 100 and stayed perfect at 2-0, while Ankit's Tebow's Purity Ring detonated JustBoxes by 52. Jason's Super Mega Awesome bottomed out at 30, and Garipp Bowls lost the closest game of the week by 2 thanks to one of the worst start/sit calls you'll ever see.",
+  "game_notes": [
+   "Tuten Under the Covers 47, Garipp Bowls 45 — kevin C survives by 2 to stay 2-0.",
+   "LUCAS'S LUCKY LIONS 57, Calvins Cutthroats 40 — Lucas rolls by 17.",
+   "Anubis 82, Cow Bellz 42 — Anu wins by 40.",
+   "This One's for John 69, The Baker Mayfields 65 — David edges Barry by 4 to reach 2-0.",
+   "Tebow's Purity Ring 92, JustBoxes 40 — Ankit's 52-point beatdown was the week's biggest.",
+   "O-moss-em 100, Leapfrog Clause 63 — Michael cracks 100 and wins by 37.",
+   "TN Gamblers 48, Super Mega Awesome ✨ 30 — TN takes it by 18."
+  ],
+  "trash_talk": [
+   "Garipp Bowls started Carson Wentz for 2 at QB while Drew Lock sat on the bench for 22 — a 20-point start/sit whoops that would have flipped the result. That 2-point loss is entirely self-inflicted.",
+   "Garipp Bowls also stranded 52 bench points, the most in the league. You didn't lose a game, you lost a coaching decision.",
+   "Jason's Super Mega Awesome ✨ posted 30 points — the lowest score in the league — with just 5 on the bench. There's nothing to blame but the lineup that scored 30.",
+   "Dan's Calvins Cutthroats were projected for 66 and delivered 40, a -26 underachiever gap. That's the biggest projection miss of the week, Dan.",
+   "Kyle's Cow Bellz left 33 bench points warming up while the starters got run over by 40. Anubis said thanks for the 82-42."
+  ],
+  "power_rankings": [
+   {
+    "rank": 1,
+    "team": "O-moss-em",
+    "comment": "2-0 with a league-high 174 points-for and a 100-burger this week. Up from 5th and now the clear top dog."
+   },
+   {
+    "rank": 2,
+    "team": "Tebow’s Purity Ring",
+    "comment": "92 points and a 52-point blowout. Up from 11th — 1-1 but 151 points-for says this team is scary."
+   },
+   {
+    "rank": 3,
+    "team": "Leapfrog Clause",
+    "comment": "167 points-for is 2nd in the league despite the L1. Down from 1st only because the 63 wasn't enough this week."
+   },
+   {
+    "rank": 4,
+    "team": "This One's for John",
+    "comment": "2-0 and 133 points-for on a W2 streak. Up from 8th and winning the tight ones."
+   },
+   {
+    "rank": 5,
+    "team": "Anubis",
+    "comment": "82 points and a 40-point win vaults them up from 13th. Waiver moves are paying off."
+   },
+   {
+    "rank": 6,
+    "team": "Garipp Bowls",
+    "comment": "142 points-for is real, but a 2-point loss and 52 bench points drop them from 2nd."
+   },
+   {
+    "rank": 7,
+    "team": "Tuten Under the Covers",
+    "comment": "2-0 on a W2 streak, though 107 points-for is the lowest among the unbeatens. Up from 9th."
+   },
+   {
+    "rank": 8,
+    "team": "JustBoxes",
+    "comment": "40 points and a 52-point loss. Down from 3rd after that faceplant."
+   },
+   {
+    "rank": 9,
+    "team": "TN Gamblers",
+    "comment": "1-1 with a W1 streak and an 18-point win. Holding around 7th-to-10th at 115 points-for."
+   },
+   {
+    "rank": 10,
+    "team": "The Baker Mayfields",
+    "comment": "0-2 despite 138 points-for — best of any winless team. Down from 6th but unlucky, losing by 4."
+   },
+   {
+    "rank": 11,
+    "team": "Cow Bellz",
+    "comment": "42 points and a 40-point loss with 33 on the bench. Down from 4th, hard."
+   },
+   {
+    "rank": 12,
+    "team": "LUCAS'S LUCKY LIONS",
+    "comment": "57-point win by 17 pushes them up from 12th's neighbor — a W1 streak with 114 points-for."
+   },
+   {
+    "rank": 13,
+    "team": "Calvins Cutthroats",
+    "comment": "0-2 with just 99 points-for and a -26 miss this week. Down from 10th."
+   },
+   {
+    "rank": 14,
+    "team": "Super Mega Awesome ✨",
+    "comment": "0-2, 51 points-for total, and a league-low 30 this week. Stays 14th."
+   }
+  ],
+  "waiver_watch": "Anubis is working the wire hard — added the Packers DEF and Emanuel Wilson, then dropped 82. O-moss-em grabbed Braelon Allen before hanging 100."
+ },
+ "text": "🏈 *MUFF WEEKLY — Week 2* 🏈\n\n_O-moss-em Hits 100 While Super Mega Awesome Forgets to Show Up_\n\nMichael's O-moss-em dropped a league-high 100 and stayed perfect at 2-0, while Ankit's Tebow's Purity Ring detonated JustBoxes by 52. Jason's Super Mega Awesome bottomed out at 30, and Garipp Bowls lost the closest game of the week by 2 thanks to one of the worst start/sit calls you'll ever see.\n\n*📋 Around the league*\n• Tuten Under the Covers 47, Garipp Bowls 45 — kevin C survives by 2 to stay 2-0.\n• LUCAS'S LUCKY LIONS 57, Calvins Cutthroats 40 — Lucas rolls by 17.\n• Anubis 82, Cow Bellz 42 — Anu wins by 40.\n• This One's for John 69, The Baker Mayfields 65 — David edges Barry by 4 to reach 2-0.\n• Tebow's Purity Ring 92, JustBoxes 40 — Ankit's 52-point beatdown was the week's biggest.\n• O-moss-em 100, Leapfrog Clause 63 — Michael cracks 100 and wins by 37.\n• TN Gamblers 48, Super Mega Awesome ✨ 30 — TN takes it by 18.\n\n*🔥 Trash talk corner*\n• Garipp Bowls started Carson Wentz for 2 at QB while Drew Lock sat on the bench for 22 — a 20-point start/sit whoops that would have flipped the result. That 2-point loss is entirely self-inflicted.\n• Garipp Bowls also stranded 52 bench points, the most in the league. You didn't lose a game, you lost a coaching decision.\n• Jason's Super Mega Awesome ✨ posted 30 points — the lowest score in the league — with just 5 on the bench. There's nothing to blame but the lineup that scored 30.\n• Dan's Calvins Cutthroats were projected for 66 and delivered 40, a -26 underachiever gap. That's the biggest projection miss of the week, Dan.\n• Kyle's Cow Bellz left 33 bench points warming up while the starters got run over by 40. Anubis said thanks for the 82-42.\n\n*👑 Power rankings*\n🥇 ▲4 *O-moss-em* — 2-0 with a league-high 174 points-for and a 100-burger this week. Up from 5th and now the clear top dog.\n🥈 ▲9 *Tebow’s Purity Ring* — 92 points and a 52-point blowout. Up from 11th — 1-1 but 151 points-for says this team is scary.\n🥉 ▼2 *Leapfrog Clause* — 167 points-for is 2nd in the league despite the L1. Down from 1st only because the 63 wasn't enough this week.\n4. ▲4 *This One's for John* — 2-0 and 133 points-for on a W2 streak. Up from 8th and winning the tight ones.\n5. ▲8 *Anubis* — 82 points and a 40-point win vaults them up from 13th. Waiver moves are paying off.\n6. ▼4 *Garipp Bowls* — 142 points-for is real, but a 2-point loss and 52 bench points drop them from 2nd.\n7. ▲2 *Tuten Under the Covers* — 2-0 on a W2 streak, though 107 points-for is the lowest among the unbeatens. Up from 9th.\n8. ▼5 *JustBoxes* — 40 points and a 52-point loss. Down from 3rd after that faceplant.\n9. ▼2 *TN Gamblers* — 1-1 with a W1 streak and an 18-point win. Holding around 7th-to-10th at 115 points-for.\n10. ▼4 *The Baker Mayfields* — 0-2 despite 138 points-for — best of any winless team. Down from 6th but unlucky, losing by 4.\n11. ▼7 *Cow Bellz* — 42 points and a 40-point loss with 33 on the bench. Down from 4th, hard.\n12. — *LUCAS'S LUCKY LIONS* — 57-point win by 17 pushes them up from 12th's neighbor — a W1 streak with 114 points-for.\n13. ▼3 *Calvins Cutthroats* — 0-2 with just 99 points-for and a -26 miss this week. Down from 10th.\n14. — *Super Mega Awesome ✨* — 0-2, 51 points-for total, and a league-low 30 this week. Stays 14th.\n\n*🛒 Waiver watch*\nAnubis is working the wire hard — added the Packers DEF and Emanuel Wilson, then dropped 82. O-moss-em grabbed Braelon Allen before hanging 100.\n\n_Generated by MUFF.ai — argue with the data, not with me._",
+ "gate": {
+  "pass": true,
+  "attempts": [
+   {
+    "pass": true,
+    "failed": []
+   }
+  ]
+ }
+}

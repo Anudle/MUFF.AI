@@ -23,15 +23,18 @@ produces one, and `fixtures/weekly/2025-w01.example.json` derives byte-for-byte
 into `2025-w01-blowout.json`.
 
 **`golden/`** — real archived run records promoted to permanent test cases.
-Empty until the season produces them; `npm run runs -- --pull` fetches
-candidates into `data/runs/`, and the keepers get copied here — always from
+`HISTORY_BUCKET=muff-digest-history-998716768903 npm run runs -- --pull` fetches
+candidates into `data/runs/` (without `HISTORY_BUCKET` it reads only the local
+store, which never has the Lambda's runs), and the keepers get copied here — always from
 S3, never from a local `npm run digest` (mock runs land in `data/runs/` too;
 `facts.provenance` tells them apart).
 
 | Golden record | Why it was promoted |
 |---|---|
 | `2026-w01-20260916T022817Z` | First real Yahoo week (14 teams, `source: yahoo`). Pins the curly-apostrophe team name (`Tebow’s Purity Ring`) that the model echoes as `'` — the eval must match by `teamKey()`, not bytes. |
+| `2026-w02-20260922T130110Z` | First scheduled Lambda delivery (`delivery_attempted: true`) and first real week with `previous_power_rankings`, so the ↑/↓/🆕 movement path runs on live data. First record carrying the inline gate verdict (`gate.attempts`). Pins a result-flipping start/sit (Wentz 2 over Lock 22 in a 2-point loss) and an emoji team name (`Super Mega Awesome ✨`). |
 
 `npm run eval` scores everything (see `docs/observability.md`);
 `npm run eval -- --live` additionally runs the real model against each
-fixture and rule-checks the output.
+fixture *and* each golden record's facts, and rule-checks the output — so a
+prompt change is tested on real league weeks, not only synthetic ones.
