@@ -108,7 +108,10 @@ muff-digest            (nodejs22.x, 512 MB, 300 s timeout)
       ├── S3: muff-digest-history-<acct>/digest-history.json  (power-ranking history)
       ├── S3: …/fixtures/weekly/<season>-wNN.json  (FANTASY_PROVIDER=fixture: hand-transcribed weeks, MUFF-58)
       ├── Anthropic API   (structured-output digest generation — bills API credits)
-      └── Telegram Bot API → TELEGRAM_CHAT_ID
+      ├── Telegram Bot API → TELEGRAM_CHAT_ID
+      └── S3: …/outbox/<season>-wNN.json  (MUFF-62: picked up by the WhatsApp sender,
+                                            a separate long-lived process — not a Lambda.
+                                            Hosting it is hands-on IaC; docs/whatsapp-sender.md)
 ```
 
 Deploy with `npm run deploy:digest` (idempotent; run `npm run deploy` first —

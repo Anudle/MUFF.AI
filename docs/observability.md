@@ -35,6 +35,10 @@ records instead of a cold start.
 | `cost` | Model, token counts, USD. Sums to the season number. |
 | `duration_ms`, `delivery_attempted`, `run_id` | Operational: did it go out, how slow, which invocation. |
 
+The WhatsApp handoff (MUFF-62) has its own key: `outbox/{season}-w{week}.json`,
+one mutable record per week (`status` pending → sent/failed, `poll_status`),
+written by the digest and flipped by the sender — see `docs/whatsapp-sender.md`.
+
 Week is zero-padded in the key so `w07` sorts before `w16` — the archive is
 meant to be read in order by a `sort()` and nothing more clever.
 
@@ -55,6 +59,11 @@ fields @timestamp, week, source, cost_usd, duration_ms, delivered, gate_pass, ge
 quality query can split API weeks from hand-transcribed degraded-mode weeks
 (`ingested_by` names the transcriber). The model never sees provenance and the
 groundedness checker ignores it.
+
+`whatsapp_queued` (MUFF-62) says whether the run wrote its outbox record; it
+does not mean WhatsApp delivery. That is the sender's job, and the sender
+logs its own `MUFF_WA` line per drained record (`week, run_id, status,
+poll_status, error`) to wherever it runs.
 
 They overlap deliberately. If an S3 write fails the cost number still lands in
 logs, and vice versa — and archiving is explicitly non-fatal, because a failed

@@ -3,7 +3,7 @@
  *
  *   npm run digest                → last completed week, print to stdout (dry run)
  *   npm run digest -- --week 15   → specific week
- *   npm run digest -- --send      → also deliver to TELEGRAM_CHAT_ID
+ *   npm run digest -- --send      → also deliver to TELEGRAM_CHAT_ID and queue for WhatsApp (MUFF-62)
  *
  * The pipeline body lives in src/digest/run.ts, shared with the scheduled
  * Lambda (MUFF-43) — this file is only argument parsing.
@@ -30,3 +30,4 @@ console.error(
 console.error(
   result.archived ? `Archived: ${storeLabel}${result.archived}` : "Archived: FAILED (see above)",
 );
+if (send) console.error(result.whatsapp_queued ? "WhatsApp: queued in the outbox (run `npm run whatsapp:once` to post)" : "WhatsApp: NOT queued (see above)");
