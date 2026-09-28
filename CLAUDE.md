@@ -11,7 +11,8 @@ MUFF.ai — an agentic fantasy-football league companion. A Claude agent answers
 There is no build step: TypeScript runs directly via `node --experimental-strip-types` (Node ≥ 20). Only Lambda deploys bundle (esbuild, inside the `infra/*.sh` scripts). Most scripts load env from `.env` via `--env-file`, not the shell.
 
 ```bash
-npm run build          # typecheck only (tsc --noEmit) — the closest thing to a test gate
+npm run build          # typecheck (tsc --noEmit) — covers src/, scripts/ and test/
+npm run test           # unit tests via node:test (no framework dep); currently pins the WhatsApp outbox seam
 npm run smoke          # Yahoo client smoke test
 npm run mcp            # MCP server over stdio
 npm run mcp:http       # exact Lambda code path, locally on :3939
@@ -23,6 +24,9 @@ npm run fixture:upload <path>    # validate again, stamp source.ingested_at, wri
 npm run runs           # browse the digest run archive; -- --pull copies records to data/runs/
 npm run auth           # Yahoo OAuth bootstrap (writes .tokens.json)
 npm run telegram:chats # list chats the bot has seen, to find TELEGRAM_CHAT_ID without posting
+npm run whatsapp       # WhatsApp sender daemon: keeps the linked-device session up, drains the outbox every 60 s
+npm run whatsapp:once  # connect, post whatever is pending, exit (manual Tuesday fallback)
+npm run whatsapp:groups # print group JIDs to pick WA_GROUP_JID
 npm run deploy         # MCP server → Lambda + API Gateway (idempotent)
 npm run deploy:digest  # scheduled digest Lambda
 npm run deploy:sync    # Sleeper players daily sync Lambda
@@ -35,7 +39,7 @@ End-to-end MCP verification over real stdio (works for either provider):
 FANTASY_PROVIDER=sleeper SLEEPER_LEAGUE_ID=<id> node --experimental-strip-types scripts/mcp-verify.ts
 ```
 
-There is no unit-test framework; verification is `npm run build` + the smoke/verify/eval scripts above.
+Unit tests use Node's built-in `node:test` runner (`test/*.test.ts`, run with `npm test`); they are few and cover process seams. Everything else is verified by `npm run build` + the smoke/verify/eval scripts above.
 
 ## Architecture
 
@@ -45,6 +49,7 @@ Three consumers sit on one provider-blind data layer:
 - **MCP server** — `src/mcp/build-server.ts` defines five read-only tools (`get_roster`, `get_matchup`, `get_standings`, `get_transactions`, `get_week_results`) shared by two transports: stdio (`server.ts`) and stateless Streamable HTTP on Lambda behind API Gateway (`lambda.ts` + `http.ts`, static bearer token, sessions disabled, JSON response mode). Tool contracts live in `docs/mcp-tools.md`. Claude Code itself connects to the stdio server through the committed project-scope `.mcp.json` (`${VAR:-default}` expansion, no literals; each user approves it once) — see the "Connecting from Claude Code" section of that doc before adding env keys there, because `.mcp.json` `env` beats `--env-file=.env`.
 - **Interactive agent** — `src/agent/` on the Claude Agent SDK; the MCP server is its entire tool surface (all built-ins disallowed, which is what makes `bypassPermissions` safe — revisit if write tools ever appear). `pickModel()` tiers Haiku/Sonnet as a cost lever, not a router. `src/telegram/bot.ts` fronts it.
 - **Digest** — `src/digest/` is deliberately a *workflow*, not an agent: `facts.ts` computes every number deterministically in code, `generate.ts` makes ONE Opus call with zod-schema-enforced output, `render.ts` does layout in code. It imports the data layer directly, not through MCP — MCP is a process boundary for agents; same-repo code calling functions doesn't need the protocol hop. `facts.ts` is fetch (`gatherWeekFacts`) + pure derive (`deriveWeekFacts`); the manual ingestion path (`src/ingest/`, `fixtures/weekly/`, `docs/ingestion-checklist.md`) feeds hand-transcribed raw inputs into the same derive while the Yahoo API is blocked; `npm run fixture:upload` is the only sanctioned way to put a fixture in the store.
+- **WhatsApp sender** — `src/whatsapp/` is a separate long-lived process (MUFF-62), not a Lambda: WhatsApp has no bot API for consumer groups, so it posts as a linked device on a spare number via Baileys (against WhatsApp ToS; see `docs/whatsapp-sender.md`). The digest never calls it — a delivering run writes one record per week to `outbox/<season>-wNN.json` (`src/digest/outbox.ts`) and the sender drains it: text, then a post-only Game of the Week poll (votes are not read back). Nothing in `src/digest/` may import Baileys; failure alerts go to the admin via the Telegram bot (`TELEGRAM_ADMIN_CHAT_ID`). Hosting it is IaC and is Anu's.
 
 Cross-cutting invariants:
 
@@ -57,4 +62,11 @@ Cross-cutting invariants:
 
 ## Docs are the source of truth for design intent
 
-Each subsystem has a design doc recording decisions and their reasoning: `docs/mcp-tools.md`, `docs/agent-design.md`, `docs/digest-design.md`, `docs/deploy.md`, `docs/observability.md`, `docs/sleeper-spike.md`, `docs/ingestion-checklist.md`, `docs/adr/`. When a change alters a documented decision, update the doc in the same change.
+Each subsystem has a design doc recording decisions and their reasoning: `docs/mcp-tools.md`, `docs/agent-design.md`, `docs/digest-design.md`, `docs/deploy.md`, `docs/observability.md`, `docs/whatsapp-sender.md`, `docs/sleeper-spike.md`, `docs/ingestion-checklist.md`, `docs/adr/`. When a change alters a documented decision, update the doc in the same change.
+
+## Current plan
+The monthly plan lives in the fde-prep repo: `~/fde-prep/plans/PLAN-2026-10.md` — read it at the start of every session.
+It defines this month's goals and the working rules. In areas it marks **hands-on** (IaC, Python), do not
+write the initial implementation — review, explain, and diagnose only, unless Anu
+explicitly asks for a fix. Task status lives in Linear (MUFF team); check the
+issue before starting.

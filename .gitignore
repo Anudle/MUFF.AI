@@ -9,3 +9,5 @@ data/fixtures/
 .claude/settings.local.json
 data/digest-history.json
 data/runs/
+.wa-auth/
+data/outbox/

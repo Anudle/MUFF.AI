@@ -18,6 +18,7 @@ import type { Provenance } from "../mcp/provider.ts";
 import { gatherWeekFacts, type PollLookup } from "./facts.ts";
 import { generateDigest } from "./generate.ts";
 import { loadPoll, savePoll, savePowerRankings, type PollTally } from "./history.ts";
+import { enqueueWhatsApp } from "./outbox.ts";
 import { renderDigest } from "./render.ts";
 
 /**
@@ -49,6 +50,8 @@ export interface DigestRunResult {
   poll_votes: number | null;
   /** MUFF-40: whether a Game of the Week poll went out after the digest. */
   poll_posted: boolean;
+  /** MUFF-62: whether the digest (+ poll) was queued in the WhatsApp outbox for the sender. */
+  whatsapp_queued: boolean;
 }
 
 /**
@@ -144,6 +147,7 @@ export async function runDigest(opts: {
 
   let sentTo: number | null = null;
   let pollPosted = false;
+  let whatsappQueued = false;
   if (opts.send) {
     const chatId = Number(process.env.TELEGRAM_CHAT_ID);
     if (!chatId) throw new Error("Set TELEGRAM_CHAT_ID to deliver the digest.");
@@ -174,6 +178,19 @@ export async function runDigest(opts: {
         console.error("Game of the Week poll failed (digest already delivered):", e);
       }
     }
+
+    // MUFF-62: queue the same digest (and poll) for the WhatsApp sender, a
+    // separate long-lived process that drains the outbox. Non-fatal for the
+    // same reason as the poll — Telegram already has it.
+    const outboxKey = await enqueueWhatsApp({
+      season: facts.season,
+      week: facts.week,
+      run_id: runId,
+      text,
+      poll: game ? { question: `🎯 Game of the Week ${game.week}: who wins?`, options: game.teams.map((t) => t.team) } : undefined,
+    });
+    whatsappQueued = outboxKey !== null;
+    if (outboxKey) progress(`Queued for WhatsApp: ${outboxKey}.`);
   }
 
   return {
@@ -189,5 +206,6 @@ export async function runDigest(opts: {
     provenance: facts.provenance,
     poll_votes: facts.group_predictions?.total_votes ?? null,
     poll_posted: pollPosted,
+    whatsapp_queued: whatsappQueued,
   };
 }

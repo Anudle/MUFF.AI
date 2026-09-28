@@ -78,7 +78,18 @@ are gone with the sections.
 
 Rendering is code, not model output: layout consistency shouldn't depend on
 sampling. `*bold*` renders in both Telegram (`Markdown` parse mode) and
-WhatsApp, which is the copy-paste/forwarding story.
+WhatsApp, so the same rendered string goes to both — no per-channel formatter.
+
+## Delivery: Telegram directly, WhatsApp via an outbox (MUFF-62)
+
+A delivering run sends to Telegram, posts the poll, then writes one record
+per week to `outbox/<season>-wNN.json` in the store (`src/digest/outbox.ts`:
+the text, the Game of the Week question/options, `status: "pending"`). A
+separate long-lived process, `src/whatsapp/`, drains that outbox into the
+league's WhatsApp group. The Lambda never touches WhatsApp: it is stateless
+and short-lived, and a WhatsApp Web session is neither. The outbox write is
+non-fatal for the same reason the poll is — Telegram already has the digest.
+Design, trade-offs and the ToS caveat: `docs/whatsapp-sender.md`.
 
 ## Game of the Week poll (MUFF-40)
 
