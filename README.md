@@ -26,6 +26,28 @@ FANTASY_PROVIDER=sleeper SLEEPER_LEAGUE_ID=<id> SLEEPER_USERNAME=<name> node --e
 Details: `docs/mcp-tools.md` (tool contracts), `docs/sleeper-spike.md`
 (endpoint mapping + gaps).
 
+## RAG — league-history callbacks (MUFF-63)
+
+The digest can cite what it said in past weeks, and the agent can answer
+"has this happened before?", without a vector database or a framework:
+
+```
+ run archive (S3)  ──▶  chunk by section  ──▶  Titan v2 embeddings  ──▶  rag/index.json
+ + league-rules.md      {season, week, team}    256-d, normalized          cosine top-k in TS
+                                                                                 │
+                                                        search_league_history (MCP tool) ◀┘
+```
+
+```bash
+npm run rag:build                                   # local store (data/rag/)
+HISTORY_BUCKET=muff-digest-history-<acct> npm run rag:build   # deployed store
+npm run rag:search -- "Who had the worst beat of the season?"
+```
+
+Why section chunks, why Titan over Voyage, why a JSON blob over a vector
+DB, and the honest "why not just paste the season into the prompt" number:
+`docs/rag-design.md`.
+
 ## Degraded mode — manual ingestion
 
 Yahoo's Fantasy API sat behind a developer-access review until mid-September

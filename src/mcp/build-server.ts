@@ -1,5 +1,6 @@
 /**
- * MUFF-15/39 — MCP server factory: the five Yahoo Fantasy tools, transport-agnostic.
+ * MUFF-15/39 — MCP server factory: the five Yahoo Fantasy tools plus the
+ * MUFF-63 league-history search, transport-agnostic.
  *
  * Design rules (the CCA-F material this lab exists to exercise):
  *  - Five narrow read-only tools, one job each — no mega "get_league_data".
@@ -28,6 +29,7 @@ import {
   getWeekResults,
 } from "./data.ts";
 import { PROVIDER } from "./data.ts";
+import { searchHistory } from "../rag/index.ts";
 
 const weekParam = z
   .number()
@@ -136,6 +138,42 @@ export function buildServer(): McpServer {
       inputSchema: { week: weekParam },
     },
     ({ week }) => run(() => getWeekResults(week)),
+  );
+
+  // MUFF-63: the one tool that reads the past instead of the provider. The
+  // five above answer "what happened"; this answers "what did we SAY about
+  // it" — the archived digests, which is where the callbacks live.
+  server.registerTool(
+    "search_league_history",
+    {
+      title: "Search league history (past digests + rules)",
+      description:
+        "Semantic search over every past weekly digest this league has received " +
+        "(headlines, recaps, and per-team power-ranking comments, each tagged with " +
+        "season and week) plus the written league rules (scoring, roster, playoffs). " +
+        "Use for 'has this happened before', 'what did the digest say about X in " +
+        "week N', streaks or storylines across weeks, and any rules question. " +
+        "Returns the k best-matching chunks, highest score first, each with its " +
+        "text, section, season/week (absent for rules) and team where applicable. " +
+        "Quote or paraphrase the returned text — a chunk is evidence for a claim " +
+        "about the past, nothing else is. Not a live stats source: for this " +
+        "week's numbers use the other tools. Read-only.",
+      inputSchema: {
+        query: z
+          .string()
+          .min(1)
+          .max(500)
+          .describe("Natural-language question or topic, e.g. 'worst beat of the season' or 'playoff format'."),
+        k: z
+          .number()
+          .int()
+          .min(1)
+          .max(10)
+          .optional()
+          .describe("How many chunks to return. Default 5."),
+      },
+    },
+    ({ query, k }) => run(async () => ({ query, hits: await searchHistory(query, k ?? 5) })),
   );
 
   return server;

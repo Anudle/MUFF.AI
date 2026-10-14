@@ -1,7 +1,10 @@
 /**
  * MUFF-15 acceptance check: drive the MCP server over stdio with a real MCP
- * client (the SDK's own), list the tools, call all five, and exercise the
+ * client (the SDK's own), list the tools, call all six, and exercise the
  * WEEK_NOT_AVAILABLE error path. Exits non-zero on any failure.
+ *
+ * search_league_history (MUFF-63) needs an index in the store the server
+ * reads (`npm run rag:build`) and Bedrock credentials for the query vector.
  */
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -30,7 +33,7 @@ function check(label: string, passed: boolean, detail: string) {
 const { tools } = await client.listTools();
 check(
   "tools/list",
-  tools.length === 5,
+  tools.length === 6,
   `${tools.length} tools: ${tools.map((t) => t.name).join(", ")}`,
 );
 
@@ -78,6 +81,20 @@ check(
   "get_week_results",
   results.status === "ok" && results.data.matchups.length > 0,
   `${results.data?.matchups?.length} matchups in week ${results.data?.week}`,
+);
+
+const history = await call("search_league_history", {
+  query: "Who had the worst beat of the season?",
+  k: 3,
+});
+check(
+  "search_league_history",
+  history.status === "ok" &&
+    history.data.hits.length === 3 &&
+    history.data.hits.every((h: any) => typeof h.score === "number" && (h.section === "rules" || h.week)),
+  history.status === "ok"
+    ? `top hit ${history.data.hits[0].id} (${history.data.hits[0].score})`
+    : `${history.code}: ${history.message?.slice(0, 80)}…`,
 );
 
 const badWeek = await call("get_roster", { week: 17 }).then(() =>

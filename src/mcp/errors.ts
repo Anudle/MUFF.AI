@@ -10,12 +10,14 @@
 import { SleeperApiError } from "../sleeper/client.ts";
 import { YahooApiError } from "../yahoo/client.ts";
 import { WeekNotAvailableError } from "./provider.ts";
+import { HistoryIndexMissingError } from "../rag/index.ts";
 
 export type ErrorCode =
   | "AUTH_EXPIRED"
   | "RATE_LIMITED"
   | "WEEK_NOT_AVAILABLE"
   | "LEAGUE_NOT_FOUND"
+  | "HISTORY_INDEX_MISSING"
   | "UPSTREAM_ERROR";
 
 export type ToolResult<T> =
@@ -35,6 +37,10 @@ export function toToolError<T = never>(e: unknown): ToolResult<T> {
   if (e instanceof WeekNotAvailableError) {
     // The message already carries the valid range + retry guidance.
     return err("WEEK_NOT_AVAILABLE", e.message);
+  }
+  if (e instanceof HistoryIndexMissingError) {
+    // MUFF-63: nothing to search until someone runs rag:build; the message says so.
+    return err("HISTORY_INDEX_MISSING", e.message);
   }
   if (e instanceof YahooApiError) {
     switch (e.status) {
