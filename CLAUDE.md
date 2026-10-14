@@ -19,6 +19,8 @@ npm run mcp:http       # exact Lambda code path, locally on :3939
 npm run agent          # interactive agent REPL (Agent SDK)
 npm run digest         # Tuesday digest; -- --week N for a specific week, -- --send to deliver
 npm run eval           # score fixtures/golden set; -- --live also runs the real model
+npm run rag:build      # rebuild the league-history index (rag/{chunks,index}.json) from the run archive in the store
+npm run rag:search     # query it from the CLI: -- [--k N] "question"
 npm run fixture:validate <path>  # manual weekly fixture: schema + cross-checks + derived facts; -- --prev <last week> for exact deltas
 npm run fixture:upload <path>    # validate again, stamp source.ingested_at, write fixtures/weekly/<season>-wNN.json to the store (HISTORY_BUCKET or data/); refuses on any error
 npm run runs           # browse the digest run archive; -- --pull copies records to data/runs/
@@ -50,6 +52,8 @@ Three consumers sit on one provider-blind data layer:
 - **Interactive agent** — `src/agent/` on the Claude Agent SDK; the MCP server is its entire tool surface (all built-ins disallowed, which is what makes `bypassPermissions` safe — revisit if write tools ever appear). `pickModel()` tiers Haiku/Sonnet as a cost lever, not a router. `src/telegram/bot.ts` fronts it.
 - **Digest** — `src/digest/` is deliberately a *workflow*, not an agent: `facts.ts` computes every number deterministically in code, `generate.ts` makes ONE Opus call with zod-schema-enforced output, `render.ts` does layout in code. It imports the data layer directly, not through MCP — MCP is a process boundary for agents; same-repo code calling functions doesn't need the protocol hop. `facts.ts` is fetch (`gatherWeekFacts`) + pure derive (`deriveWeekFacts`); the manual ingestion path (`src/ingest/`, `fixtures/weekly/`, `docs/ingestion-checklist.md`) feeds hand-transcribed raw inputs into the same derive while the Yahoo API is blocked; `npm run fixture:upload` is the only sanctioned way to put a fixture in the store.
 - **WhatsApp sender** — `src/whatsapp/` is a separate long-lived process (MUFF-62), not a Lambda: WhatsApp has no bot API for consumer groups, so it posts as a linked device on a spare number via Baileys (against WhatsApp ToS; see `docs/whatsapp-sender.md`). The digest never calls it — a delivering run writes one record per week to `outbox/<season>-wNN.json` (`src/digest/outbox.ts`) and the sender drains it: text, then a post-only Game of the Week poll (votes are not read back). Nothing in `src/digest/` may import Baileys; failure alerts go to the admin via the Telegram bot (`TELEGRAM_ADMIN_CHAT_ID`). Hosting it is IaC and is Anu's.
+
+- **League-history RAG** — `src/rag/` (MUFF-63): past digests from the run archive (one delivered record per week, synthetic weeks excluded) plus `docs/league-rules.md`, chunked by section with `{season, week, team}` metadata, embedded with Bedrock Titan v2 (256-d, normalized), stored as one JSON blob (`rag/index.json`) in the same store, searched by dot product in TypeScript. Exposed as the sixth MCP tool, `search_league_history`. No vector DB, no re-ranking, no framework — `docs/rag-design.md` says why and what it would take to deploy (Bedrock + S3 IAM on the Lambda roles is Anu's IaC).
 
 Cross-cutting invariants:
 

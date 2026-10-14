@@ -2,7 +2,8 @@
 
 Server: `muff-<provider>-fantasy` v0.2.0 · stdio transport · `npm run mcp` (or
 `.mcp.json`, below) · HTTP twin on Lambda (`docs/deploy.md`)
-Five read-only tools over the provider-blind data layer (`src/mcp/data.ts`:
+Five read-only tools over the provider-blind data layer, plus one read-only
+search over the digest archive (`search_league_history`, MUFF-63) (`src/mcp/data.ts`:
 Yahoo behind the MUFF-11 auto-refreshing OAuth layer, Sleeper with no auth, or
 `fixture` — hand-transcribed weeks from the blob store, MUFF-58 degraded mode,
 where `get_roster` / `get_matchup` return `LEAGUE_NOT_FOUND` with do-not-retry
@@ -42,6 +43,7 @@ Messages tell the agent what to *do*, not just what broke:
 | `RATE_LIMITED` | Yahoo 429/999 | Retry after ~60s |
 | `WEEK_NOT_AVAILABLE` | Week outside played range | Don't retry that week; omit `week` for current |
 | `LEAGUE_NOT_FOUND` | Bad league/team/resource | Don't retry same args |
+| `HISTORY_INDEX_MISSING` | No `rag/index.json` in the store | Don't retry; tell user to run `npm run rag:build` |
 | `UPSTREAM_ERROR` | Anything else (5xx, network) | Retry once, then report |
 
 ## Tools
@@ -82,11 +84,23 @@ Every matchup in the league for one week (the digest's primary source).
 - **Returns:** `{league, season, week, matchups: [{status, is_tied, winner, teams: [{team, manager, points, projected_points}]}]}`
 - **Constraints:** read-only
 
+### `search_league_history`
+Semantic search over past digests (headline, recap, per-team ranking lines,
+each tagged season/week) and `docs/league-rules.md` (one chunk per `##`).
+The one tool that reads the archive instead of the provider: "what did we
+*say* about it", not "what happened". Design: `docs/rag-design.md`.
+
+- **Input:** `query: string (1–500)`, `k?: int (1–10)`, default 5
+- **Returns:** `{query, hits: [{id, section, season?, week?, team?, rank?, title?, text, source, score}]}` — highest `score` first; `section` is `headline` / `recap` / `power_ranking` / `rules`; `season`/`week` absent on rules chunks; `source` is the run-archive key the text came from
+- **Constraints:** needs an index (`npm run rag:build`) and Bedrock credentials for the query embedding — otherwise `HISTORY_INDEX_MISSING` / `UPSTREAM_ERROR`; not a live stats source; read-only
+
 ## Verification
 
 `node --experimental-strip-types scripts/mcp-verify.ts` drives the server over
-stdio with the SDK's MCP client: lists tools, calls all five against the 2025
-Monarch United league, and asserts the `WEEK_NOT_AVAILABLE` error path.
+stdio with the SDK's MCP client: lists tools, calls all six against the
+Monarch United league (the history search needs a local index — `npm run
+rag:build` — and Bedrock credentials), and asserts the `WEEK_NOT_AVAILABLE`
+error path.
 Interactive alternative: `npx @modelcontextprotocol/inspector npm run mcp`.
 
 ## Connecting from Claude Code (MUFF-55)

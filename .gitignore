@@ -11,3 +11,4 @@ data/digest-history.json
 data/runs/
 .wa-auth/
 data/outbox/
+data/rag/
