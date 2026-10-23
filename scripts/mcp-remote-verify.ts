@@ -6,6 +6,10 @@
  * Usage (deploy.sh writes MCP_URL and MCP_AUTH_TOKEN into .env):
  *   npm run verify:remote
  *
+ * Against the local container (MUFF-64; `docker compose up`), where there is
+ * no Yahoo auth: point MCP_URL at it and stop after the transport checks —
+ *   MCP_URL=http://localhost:3939/mcp npm run verify:remote -- --transport-only
+ *
  * Timing note: if the function hasn't been hit for a while the first
  * request pays the cold start (init + Secrets Manager read + Yahoo league
  * discovery); subsequent calls show the warm path.
@@ -57,9 +61,14 @@ console.log(`   connect + initialize: ${connectMs} ms`);
 const [{ tools }, listMs] = await timed(() => client.listTools());
 check(
   "tools/list",
-  tools.length === 5,
+  tools.length === 6,
   `${tools.length} tools in ${listMs} ms: ${tools.map((t) => t.name).join(", ")}`,
 );
+
+if (process.argv.includes("--transport-only")) {
+  await client.close();
+  process.exit(failures === 0 ? 0 : 1);
+}
 
 async function call(name: string, args: Record<string, unknown>) {
   const res = await client.callTool({ name, arguments: args });

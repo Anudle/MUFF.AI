@@ -26,6 +26,31 @@ FANTASY_PROVIDER=sleeper SLEEPER_LEAGUE_ID=<id> SLEEPER_USERNAME=<name> node --e
 Details: `docs/mcp-tools.md` (tool contracts), `docs/sleeper-spike.md`
 (endpoint mapping + gaps).
 
+## Running it in a container (MUFF-64)
+
+The MCP server ships as a **Lambda container image** and the same image runs
+locally with Docker Compose, with LocalStack standing in for S3 so nothing needs
+AWS credentials:
+
+```bash
+docker compose up --build
+MCP_URL=http://localhost:3939/mcp npm run verify:remote -- --transport-only
+```
+
+`s3` (LocalStack) creates the bucket and syncs `./data` into it, then `mcp`
+starts the image with its HTTP entrypoint on :3939 (Sleeper provider by default). To hit the unmodified Lambda entrypoint through the Runtime
+Interface Emulator instead:
+
+```bash
+docker compose --profile rie up --build rie
+curl -s localhost:9009/2015-03-31/functions/function/invocations -d @infra/rie-event.json
+```
+
+How it gets to prod: `Dockerfile` → ECR → `muff-mcp-server` with
+`PackageType: Image` (`npm run deploy:container`). CI builds the image and
+drives it with a real MCP client on every PR (`.github/workflows/container.yml`).
+Design notes and the zip-vs-image trade-off: `docs/deploy.md`.
+
 ## RAG — league-history callbacks (MUFF-63)
 
 The digest can cite what it said in past weeks, and the agent can answer

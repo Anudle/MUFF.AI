@@ -105,6 +105,12 @@ ENV_JSON="$(TOKENS_SECRET_ID="$SECRET" YAHOO_CLIENT_ID="$YAHOO_CLIENT_ID" \
     console.log(JSON.stringify({Variables: Object.fromEntries(p.map(k => [k, process.env[k]]))}))')"
 
 if aws lambda get-function --function-name "$FUNC" --region "$REGION" >/dev/null 2>&1; then
+  # MUFF-64: once the function is container-backed, zips can't be pushed to it.
+  if [[ "$(aws lambda get-function-configuration --function-name "$FUNC" --region "$REGION" \
+        --query PackageType --output text)" == "Image" ]]; then
+    echo "❌ $FUNC is a container image function — use 'npm run deploy:container' (infra/deploy-container.sh)."
+    exit 1
+  fi
   echo "==> Updating $FUNC (code, then config)"
   aws lambda update-function-code --function-name "$FUNC" \
     --zip-file "fileb://$BUNDLE_DIR/function.zip" --region "$REGION" >/dev/null

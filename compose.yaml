@@ -1,0 +1,80 @@
+# MUFF-64 — the whole MCP path on a laptop with no AWS credentials.
+#
+#   docker compose up --build        # LocalStack (S3 stand-in) seeded from ./data, then the MCP server
+#   MCP_URL=http://localhost:3939/mcp npm run verify:remote -- --transport-only
+#
+# `mcp` is the SAME image Lambda runs (see Dockerfile); only the entrypoint
+# differs: instead of the Runtime Interface Client it runs local-http.mjs, a
+# plain HTTP front for the identical handler code, so an MCP client can talk
+# to it directly. To exercise the real Lambda entrypoint (emulator + event
+# JSON) use the `rie` profile:
+#
+#   docker compose --profile rie up --build rie
+#   curl -s localhost:9009/2015-03-31/functions/function/invocations -d @infra/rie-event.json
+#
+# S3 stand-in: LocalStack community edition (MinIO withdrew its public images
+# in late 2025). src/store.ts only needs Get/Put/ListObjectsV2. The AWS SDK
+# picks up AWS_ENDPOINT_URL_S3 on its own; S3_FORCE_PATH_STYLE is ours
+# (store.ts) because the stand-in has no per-bucket DNS. The ready hook in
+# infra/localstack-init.sh creates the bucket and syncs ./data into it, so
+# whatever you have locally (players map, fixtures, RAG index, run archive)
+# is what the container sees.
+#
+# Provider defaults to Sleeper (no auth). Yahoo needs .tokens.json → Secrets
+# Manager, which is exactly the AWS dependency this stack avoids; override
+# with FANTASY_PROVIDER=fixture if you have fixtures/weekly in ./data.
+
+services:
+  s3:
+    image: localstack/localstack:2026.10.2
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: us-east-2
+    ports:
+      - "4566:4566"
+    volumes:
+      - ./data:/seed:ro
+      - ./infra/localstack-init.sh:/etc/localstack/init/ready.d/seed.sh:ro
+    healthcheck:
+      # The ready hook runs before this reports healthy, so `mcp` starts
+      # against a seeded bucket.
+      test: ["CMD-SHELL", "curl -sf localhost:4566/_localstack/init/ready | grep -q '\"completed\": true'"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  mcp:
+    build: .
+    image: muff-mcp:local
+    entrypoint: ["node", "/var/task/local-http.mjs"]
+    depends_on:
+      s3:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PORT: "3939"
+      FANTASY_PROVIDER: ${FANTASY_PROVIDER:-sleeper}
+      SLEEPER_LEAGUE_ID: ${SLEEPER_LEAGUE_ID:-1251080762300583936}
+      # Store → LocalStack
+      HISTORY_BUCKET: muff-local
+      AWS_ENDPOINT_URL_S3: http://s3:4566
+      S3_FORCE_PATH_STYLE: "1"
+      AWS_REGION: us-east-2
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - "3939:3939"
+
+  # The unmodified Lambda entrypoint, for the Day-1 curl check only.
+  rie:
+    profiles: [rie]
+    build: .
+    image: muff-mcp:local
+    environment:
+      MCP_AUTH_TOKEN: dev
+      FANTASY_PROVIDER: ${FANTASY_PROVIDER:-sleeper}
+      SLEEPER_LEAGUE_ID: ${SLEEPER_LEAGUE_ID:-1251080762300583936}
+    ports:
+      - "9009:8080"

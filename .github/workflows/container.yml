@@ -1,0 +1,51 @@
+# MUFF-64 — the container gate: build the Lambda image, run it with the plain
+# HTTP entrypoint, and drive it with a real MCP client. Keyless: Sleeper is a
+# public API and nothing here touches AWS.
+#
+# Pushing to ECR on main is deliberately NOT here yet: it needs an OIDC role
+# for GitHub in the AWS account, which is IaC (Anu's). Until then the push is
+# `npm run deploy:container` from a laptop.
+name: container
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Build the Lambda image
+        run: docker build --provenance=false --sbom=false -t muff-mcp:ci .
+
+      - name: Run it with the HTTP entrypoint
+        run: |
+          docker run -d --name mcp -p 3939:3939 \
+            --entrypoint node \
+            -e PORT=3939 -e MCP_AUTH_TOKEN=ci-token \
+            -e FANTASY_PROVIDER=sleeper -e SLEEPER_LEAGUE_ID=1251080762300583936 \
+            muff-mcp:ci /var/task/local-http.mjs
+          for i in $(seq 1 20); do
+            curl -sf -o /dev/null -X POST localhost:3939/mcp -H 'authorization: Bearer ci-token' \
+              -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
+              -d '{"jsonrpc":"2.0","id":0,"method":"ping"}' && break
+            sleep 1
+          done
+
+      - name: MCP client against the container
+        env:
+          MCP_URL: http://localhost:3939/mcp
+          MCP_AUTH_TOKEN: ci-token
+        run: npm run verify:remote -- --transport-only
+
+      - name: Container logs
+        if: always()
+        run: docker logs mcp

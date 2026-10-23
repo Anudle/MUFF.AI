@@ -1,0 +1,18 @@
+# Keep the build context small and secrets out of image layers for good.
+node_modules
+dist
+.git
+.env
+.env.*
+!.env.example
+.tokens.json
+.wa-auth
+data
+eval
+rag
+fixtures
+docs
+test
+.claude
+.github
+*.md
