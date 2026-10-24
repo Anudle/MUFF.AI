@@ -72,7 +72,12 @@ class S3Store implements JsonStore {
 
   private async sdk() {
     const mod = await import("@aws-sdk/client-s3");
-    this.client ??= new mod.S3Client({});
+    // S3_FORCE_PATH_STYLE: set by compose.yaml for the LocalStack S3 stand-in,
+    // which has no per-bucket DNS. The endpoint itself comes from AWS_ENDPOINT_URL_S3,
+    // which the SDK reads on its own. Both unset on Lambda → real S3.
+    this.client ??= new mod.S3Client({
+      forcePathStyle: Boolean(process.env.S3_FORCE_PATH_STYLE),
+    });
     return { mod, client: this.client };
   }
 

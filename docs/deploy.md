@@ -3,9 +3,14 @@
 One command, idempotent:
 
 ```
-npm run deploy      # bundle → zip → secret → IAM role → Lambda → Function URL
+npm run deploy            # bundle → zip → secret → IAM role → Lambda → API Gateway
+npm run deploy:container  # MUFF-64: Dockerfile → ECR → Lambda (PackageType: Image)
 npm run verify:remote
 ```
+
+`deploy` and `deploy:container` are alternatives for the same function, not
+a sequence — see "Container image" below. Once the function is image-backed,
+`deploy` refuses to push a zip onto it.
 
 ## Architecture
 
@@ -91,6 +96,67 @@ containers are harmless (last write wins).
 - **Teardown**: commands in the header of `infra/deploy.sh`.
 - **Why no CDK/SAM**: four resources, one person, one environment — plain
   CLI keeps every call visible. Revisit when any of those become plural.
+
+## Container image (MUFF-64)
+
+```
+git push ─► CI: docker build → run image (HTTP entrypoint) → MCP client verify
+laptop   ─► npm run deploy:container
+              docker build --platform linux/amd64 --provenance=false
+              → ECR muff-mcp-server:<git sha>
+              → Lambda muff-mcp-server  PackageType: Image, CMD index.handler
+docker compose up ─► LocalStack (S3 stand-in, seeded from ./data) + the same image on :3939
+```
+
+**What the Dockerfile does.** Two stages. The build stage (`node:22-slim`,
+as the unprivileged `node` user) runs `npm ci` and the same esbuild command
+`infra/deploy.sh` has always used, producing `index.mjs` (the Lambda handler)
+plus `local-http.mjs` (a plain HTTP front for the identical handler code, from
+`scripts/mcp-http-local.ts`). The runtime stage (`public.ecr.aws/lambda/nodejs:22`)
+copies just those two files into `/var/task` and sets `CMD ["index.handler"]`.
+No `node_modules` ships: esbuild already inlined every dependency, so the
+image is the zip artifact plus a runtime. Base images are pinned by digest;
+`.dockerignore` keeps `.env`, `.tokens.json` and `data/` out of every layer.
+
+**What the base image provides.** Node 22, the Runtime Interface Client (the
+loop that polls Lambda's runtime API and calls the handler), an ENTRYPOINT
+that runs the RIC in Lambda and the Runtime Interface Emulator locally, and
+`LAMBDA_TASK_ROOT=/var/task`. The runtime stage has no `USER` line on
+purpose: Lambda already executes the handler as an unprivileged sandbox user,
+and the entrypoint expects root to hand off.
+
+**Same image locally.** `compose.yaml` overrides the entrypoint to
+`node /var/task/local-http.mjs` so an MCP client can talk to the container
+without wrapping requests in API Gateway events; the `rie` profile runs the
+untouched Lambda entrypoint for the curl-an-event check (`infra/rie-event.json`).
+S3 is LocalStack (MinIO was the first choice, but it withdrew its public
+images in late 2025): the AWS SDK honours `AWS_ENDPOINT_URL_S3` by itself, and
+`src/store.ts` gained one option, `forcePathStyle` from `S3_FORCE_PATH_STYLE`,
+because the stand-in has no per-bucket DNS. `infra/localstack-init.sh` is the
+ready hook that creates the bucket and syncs `./data` into it. Provider defaults to Sleeper because Yahoo
+needs Secrets Manager, which is the AWS dependency the stack is avoiding.
+
+**Zip → Image is a one-way door.** `PackageType` is immutable, so
+`infra/deploy-container.sh` deletes and recreates `muff-mcp-server` the first
+time. The ARN is unchanged, so the API Gateway integration keeps working; the
+resource-based invoke permission is lost on delete and re-added. The script
+owns only the ECR repo, the image and the package type — secret, role and
+API still come from `deploy.sh`. Two gotchas it encodes: build for
+`linux/amd64` on Apple silicon, and pass `--provenance=false --sbom=false`
+because BuildKit's attestation manifests produce an OCI index Lambda rejects.
+
+**Why a Lambda image rather than ECS/Fargate.** Same reason as "why no CDK"
+above: one function, one person, zero idle cost. A container image changes
+the packaging (10 GB limit, reproducible base, local parity) without changing
+the compute model. ECS would flip the decision only if the server needed
+long-lived connections (sessions, SSE streams) or a warm process — exactly
+the things `http.ts` disables. Cold starts for image functions are typically
+a few hundred ms slower than zip at this size; measure on the first Tuesday
+and record it under Operational notes.
+
+**Not done yet.** CI does not push to ECR: that needs a GitHub OIDC role in
+the account (IaC). Rebuild-from-blank and the first production switch are the
+Day 3 steps in MUFF-64.
 
 ## The scheduled digest (MUFF-43)
 

@@ -1,0 +1,12 @@
+{
+  "rawPath": "/mcp",
+  "rawQueryString": "",
+  "isBase64Encoded": false,
+  "requestContext": { "http": { "method": "POST" }, "domainName": "localhost" },
+  "headers": {
+    "content-type": "application/json",
+    "accept": "application/json, text/event-stream",
+    "authorization": "Bearer dev"
+  },
+  "body": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\"}"
+}
