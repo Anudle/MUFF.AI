@@ -69,7 +69,7 @@ Cross-cutting invariants:
 Each subsystem has a design doc recording decisions and their reasoning: `docs/mcp-tools.md`, `docs/agent-design.md`, `docs/digest-design.md`, `docs/deploy.md`, `docs/observability.md`, `docs/whatsapp-sender.md`, `docs/sleeper-spike.md`, `docs/ingestion-checklist.md`, `docs/adr/`. When a change alters a documented decision, update the doc in the same change.
 
 ## Current plan
-The monthly plan lives in the fde-prep repo: `~/fde-prep/plans/PLAN-2026-10.md` — read it at the start of every session.
+The monthly plan lives at `~/Downloads/Fantasy Football & Projects/PLAN-2026-10.md` — read it at the start of every session.
 It defines this month's goals and the working rules. In areas it marks **hands-on** (IaC, Python), do not
 write the initial implementation — review, explain, and diagnose only, unless Anu
 explicitly asks for a fix. Task status lives in Linear (MUFF team); check the
