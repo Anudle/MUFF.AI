@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>MUFF — playoff race</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <p class="eyebrow" id="league">MUFF</p>
+  <h1>The playoff race</h1>
+  <p class="sub" id="asof">Loading the season…</p>
+  <label class="team-select">
+    <span>My team</span>
+    <select id="me"><option value="">Pick your team</option></select>
+  </label>
+</header>
+
+<div class="sticky" id="sticky" hidden></div>
+
+<main id="main" hidden>
+  <section aria-labelledby="h-odds">
+    <h2 id="h-odds">Playoff odds</h2>
+    <p class="note" id="odds-note"></p>
+    <div id="odds" class="odds"></div>
+  </section>
+
+  <section aria-labelledby="h-whatif" id="whatif-section">
+    <div class="row">
+      <h2 id="h-whatif">What if…</h2>
+      <button type="button" id="reset" class="ghost" disabled>Reset picks</button>
+    </div>
+    <p class="note">Tap a winner in any remaining game and the odds above update.</p>
+    <div id="whatif"></div>
+  </section>
+
+  <section aria-labelledby="h-luck">
+    <h2 id="h-luck">Who's been lucky</h2>
+    <p class="note">All-play is your record if you had played every team every week. Luck is your real wins minus the wins those scores deserved.</p>
+    <div id="luck" class="luck"></div>
+  </section>
+
+  <section aria-labelledby="h-swap">
+    <h2 id="h-swap">Trade schedules</h2>
+    <p class="note">Each row is a team; each column is whose schedule they play. The outlined cell is the real record. Tap a cell for the detail.</p>
+    <p class="detail" id="swap-detail" aria-live="polite"></p>
+    <div class="scroll"><table id="swap" class="swap"></table></div>
+  </section>
+</main>
+
+<footer>
+  <p id="foot"></p>
+  <p>Odds are a simulation: every team keeps scoring like it has so far, 10,000 times over. No injuries, byes or lineups. Ties on record are broken by points for.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

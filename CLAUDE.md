@@ -21,6 +21,9 @@ npm run digest         # Tuesday digest; -- --week N for a specific week, -- --s
 npm run eval           # score fixtures/golden set; -- --live also runs the real model
 npm run rag:build      # rebuild the league-history index (rag/{chunks,index}.json) from the run archive in the store
 npm run rag:search     # query it from the CLI: -- [--k N] "question"
+npm run site:snapshot  # build the league site's season snapshot (site/season.json) into the store
+npm run site:dev       # bundle web/ and preview the league site on :4173 from the local snapshot
+npm run site:bundle    # dist/site/ — the static files to upload (never season.json)
 npm run fixture:validate <path>  # manual weekly fixture: schema + cross-checks + derived facts; -- --prev <last week> for exact deltas
 npm run fixture:upload <path>    # validate again, stamp source.ingested_at, write fixtures/weekly/<season>-wNN.json to the store (HISTORY_BUCKET or data/); refuses on any error
 npm run runs           # browse the digest run archive; -- --pull copies records to data/runs/
@@ -55,6 +58,8 @@ Three consumers sit on one provider-blind data layer:
 
 - **League-history RAG** — `src/rag/` (MUFF-63): past digests from the run archive (one delivered record per week, synthetic weeks excluded) plus `docs/league-rules.md`, chunked by section with `{season, week, team}` metadata, embedded with Bedrock Titan v2 (256-d, normalized), stored as one JSON blob (`rag/index.json`) in the same store, searched by dot product in TypeScript. Exposed as the sixth MCP tool, `search_league_history`. No vector DB, no re-ranking, no framework — `docs/rag-design.md` says why and what it would take to deploy (Bedrock + S3 IAM on the Lambda roles is Anu's IaC).
 
+- **League site** — `src/site/` + `web/` (MUFF-71): a static page (playoff odds with a what-if picker, luck index, schedule swap) fed by one snapshot, `site/season.json`, which the digest run rewrites non-fatally (`publishSite`). `season.ts` fetches through the provider seam (including `getSchedule`, the one provider function that reads future weeks and is not an MCP tool), `derive.ts` computes, and `sim.ts` is the only arithmetic that runs in the browser — it must stay import-free because it is bundled into `web/app.ts` and unit-tested as the same module. League format constants live in `src/site/config.ts` and mirror `docs/league-rules.md`. Hosting (CloudFront over the private bucket, origin path `/site`) is IaC and is Anu's — `docs/league-site.md`.
+
 Cross-cutting invariants:
 
 - **Errors are data.** Tool handlers never throw. Every response is `{status:"ok", data}` or `{status:"error", code, message}`, and error messages tell the agent what to *do* (retry, don't retry, run `npm run auth`). Codes are enumerated in `docs/mcp-tools.md`.
@@ -66,7 +71,7 @@ Cross-cutting invariants:
 
 ## Docs are the source of truth for design intent
 
-Each subsystem has a design doc recording decisions and their reasoning: `docs/mcp-tools.md`, `docs/agent-design.md`, `docs/digest-design.md`, `docs/deploy.md`, `docs/observability.md`, `docs/whatsapp-sender.md`, `docs/sleeper-spike.md`, `docs/ingestion-checklist.md`, `docs/adr/`. When a change alters a documented decision, update the doc in the same change.
+Each subsystem has a design doc recording decisions and their reasoning: `docs/mcp-tools.md`, `docs/agent-design.md`, `docs/digest-design.md`, `docs/deploy.md`, `docs/observability.md`, `docs/whatsapp-sender.md`, `docs/league-site.md`, `docs/sleeper-spike.md`, `docs/ingestion-checklist.md`, `docs/adr/`. When a change alters a documented decision, update the doc in the same change.
 
 ## Current plan
 The monthly plan lives at `~/Downloads/Fantasy Football & Projects/PLAN-2026-10.md` — read it at the start of every session.

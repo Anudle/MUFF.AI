@@ -65,6 +65,11 @@ does not mean WhatsApp delivery. That is the sender's job, and the sender
 logs its own `MUFF_WA` line per drained record (`week, run_id, status,
 poll_status, error`) to wherever it runs.
 
+`site_published` (MUFF-71) says whether the run rewrote the league site's
+snapshot (`site/season.json`, see `docs/league-site.md`). `false` means the
+page is showing last week's numbers — typically a missing `site/*` grant or
+fixture mode, which has no future schedule.
+
 They overlap deliberately. If an S3 write fails the cost number still lands in
 logs, and vice versa — and archiving is explicitly non-fatal, because a failed
 evidence write must never cost the league its Tuesday digest. The message is
