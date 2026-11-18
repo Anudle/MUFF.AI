@@ -60,6 +60,7 @@ export async function handler(event: DigestEvent | null | undefined) {
     poll_votes: result.poll_votes,
     // MUFF-62: queued in the outbox for the WhatsApp sender (delivery is that process's job).
     whatsapp_queued: result.whatsapp_queued,
+    site_published: result.site_published !== null,
     cost_usd: result.cost.cost_usd,
     model: result.cost.model,
     input_tokens: result.cost.input_tokens,

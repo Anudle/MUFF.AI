@@ -273,6 +273,37 @@ export async function getTransactions(count = 10) {
   };
 }
 
+/**
+ * MUFF-71 — who plays whom in weeks fromWeek..toWeek, INCLUDING weeks not yet
+ * played (the league site's playoff what-if needs the remaining slate). The
+ * one fetcher that deliberately skips resolveWeek's upper bound: pairings
+ * exist for the whole season, scores don't, so this returns names only.
+ * Not an MCP tool.
+ */
+export async function getSchedule(fromWeek: number, toWeek: number) {
+  const league = await resolveLeague();
+  if (fromWeek < league.start_week || toWeek > league.end_week) {
+    throw new Error(
+      `Schedule weeks ${fromWeek}–${toWeek} are outside the season (${league.start_week}–${league.end_week}). Do not retry.`,
+    );
+  }
+  const weeks: number[] = [];
+  for (let w = fromWeek; w <= toWeek; w++) weeks.push(w);
+  return Promise.all(
+    weeks.map(async (w) => {
+      const data = (await yahooFetch(
+        `league/${league.league_key}/scoreboard;week=${w}`,
+      )) as Json;
+      const leagueNode = mergeFragments(data.fantasy_content.league);
+      const matchups = items(
+        leagueNode.scoreboard?.["0"]?.matchups ?? leagueNode.scoreboard?.matchups,
+        "matchup",
+      ).map((m) => shapeMatchup(m).teams.map((t) => String(t.team)));
+      return { week: w, matchups };
+    }),
+  );
+}
+
 export async function getWeekResults(week?: number) {
   const league = await resolveLeague();
   const w = resolveWeek(league, week);

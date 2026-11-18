@@ -12,3 +12,4 @@ data/runs/
 .wa-auth/
 data/outbox/
 data/rag/
+data/site/

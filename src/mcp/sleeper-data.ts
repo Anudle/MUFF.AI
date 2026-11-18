@@ -349,3 +349,24 @@ export async function getWeekResults(week?: number) {
     })),
   };
 }
+
+/** MUFF-71 — pairings for weeks fromWeek..toWeek, future weeks included (see yahoo-data.ts). */
+export async function getSchedule(fromWeek: number, toWeek: number) {
+  const league = await resolveLeague();
+  if (fromWeek < league.start_week || toWeek > league.end_week) {
+    throw new Error(
+      `Schedule weeks ${fromWeek}–${toWeek} are outside the season (${league.start_week}–${league.end_week}). Do not retry.`,
+    );
+  }
+  const weeks: number[] = [];
+  for (let w = fromWeek; w <= toWeek; w++) weeks.push(w);
+  return Promise.all(
+    weeks.map(async (w) => {
+      const entries = await fetchMatchups(league.league_key, w);
+      return {
+        week: w,
+        matchups: shapeMatchups(league, entries, w).map((m) => m.teams.map((t) => String(t.team))),
+      };
+    }),
+  );
+}

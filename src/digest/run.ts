@@ -20,6 +20,7 @@ import { generateDigest } from "./generate.ts";
 import { loadPoll, savePoll, savePowerRankings, type PollTally } from "./history.ts";
 import { enqueueWhatsApp } from "./outbox.ts";
 import { renderDigest } from "./render.ts";
+import { publishSite } from "../site/publish.ts";
 
 /**
  * Progress lines. Locally they go to stderr so stdout stays the digest text
@@ -52,6 +53,8 @@ export interface DigestRunResult {
   poll_posted: boolean;
   /** MUFF-62: whether the digest (+ poll) was queued in the WhatsApp outbox for the sender. */
   whatsapp_queued: boolean;
+  /** MUFF-71: league-site snapshot key, or null if it could not be rebuilt (non-fatal). */
+  site_published: string | null;
 }
 
 /**
@@ -145,6 +148,12 @@ export async function runDigest(opts: {
     gate,
   });
 
+  // MUFF-71: refresh the league site's season snapshot. Like the archive it
+  // runs on dry runs too and never throws — the site is a side output, and it
+  // is whole-season, so it is the same snapshot whichever week this run was for.
+  const sitePublished = await publishSite();
+  if (sitePublished) progress(`League site snapshot written: ${sitePublished}.`);
+
   let sentTo: number | null = null;
   let pollPosted = false;
   let whatsappQueued = false;
@@ -207,5 +216,6 @@ export async function runDigest(opts: {
     poll_votes: facts.group_predictions?.total_votes ?? null,
     poll_posted: pollPosted,
     whatsapp_queued: whatsappQueued,
+    site_published: sitePublished,
   };
 }

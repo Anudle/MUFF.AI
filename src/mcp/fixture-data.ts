@@ -171,3 +171,18 @@ export async function getProvenance(week: number): Promise<Provenance> {
   const f = await loadFixture(week);
   return { source: f.source.kind, ingested_by: f.source.ingested_by, ingested_at: f.source.ingested_at };
 }
+
+/**
+ * MUFF-71 — a transcribed week records what happened, not who plays next, so
+ * there is no remaining schedule to serve. The league site simply isn't
+ * republished while the league is in fixture mode.
+ */
+export async function getSchedule(
+  _fromWeek: number,
+  _toWeek: number,
+): Promise<{ week: number; matchups: string[][] }[]> {
+  throw new Error(
+    "The season schedule is not available in fixture mode (FANTASY_PROVIDER=fixture): weekly fixtures hold " +
+      "no future matchups. Do not retry; the league site is rebuilt once an API provider is back.",
+  );
+}

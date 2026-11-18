@@ -48,3 +48,5 @@ export const getMatchup = provider.getMatchup;
 export const getStandings = provider.getStandings;
 export const getTransactions = provider.getTransactions;
 export const getWeekResults = provider.getWeekResults;
+/** MUFF-71: remaining-schedule lookup for the league site. Not an MCP tool. */
+export const getSchedule = provider.getSchedule;

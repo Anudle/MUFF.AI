@@ -1,7 +1,7 @@
 {
   "name": "muff-ai",
   "version": "0.1.0",
-  "description": "MUFF.ai \u2014 Monarch United Fantasy Football agentic league companion",
+  "description": "MUFF.ai — Monarch United Fantasy Football agentic league companion",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -25,6 +25,9 @@
     "eval": "node --env-file-if-exists=.env --experimental-strip-types scripts/eval.ts",
     "rag:build": "node --env-file-if-exists=.env --experimental-strip-types scripts/rag-build.ts",
     "rag:search": "node --env-file-if-exists=.env --experimental-strip-types scripts/rag-search.ts",
+    "site:snapshot": "node --env-file-if-exists=.env --experimental-strip-types scripts/site-snapshot.ts",
+    "site:bundle": "node --experimental-strip-types scripts/site-bundle.ts",
+    "site:dev": "node --experimental-strip-types scripts/site-dev.ts",
     "fixture:validate": "node --experimental-strip-types scripts/fixture-validate.ts",
     "fixture:upload": "node --experimental-strip-types scripts/fixture-upload.ts",
     "spike:sleeper": "node --env-file-if-exists=.env --experimental-strip-types scripts/sleeper-spike.ts",
