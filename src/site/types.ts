@@ -48,15 +48,8 @@ export interface SeasonSnapshot {
   through_week: number;
   generated_at: string;
   config: { regular_season_end: number; playoff_teams: number };
-  /** Sorted by standing: wins (ties half), then head-to-head among the tied teams, then points for. */
+  /** Sorted by standing: wins (ties half), then points for. */
   teams: TeamSeason[];
-  /**
-   * Head-to-head so far: `h2h[a][b]` is the games team a has won against team
-   * b (a tie is half each), indexes into `teams`. The seeding tiebreak reads
-   * it. Absent on snapshots written before the bracket existed (treated as no
-   * games played).
-   */
-  h2h?: number[][];
   /** Regular-season games still to play; matchups are index pairs into `teams`. */
   remaining: { week: number; matchups: [number, number][] }[];
   /** The latest delivered digest. Absent until a delivering run has written one. */
