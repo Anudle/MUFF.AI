@@ -10,12 +10,15 @@
  */
 
 import { deriveSeason } from "../src/site/derive.ts";
-import { SITE_KEY } from "../src/site/publish.ts";
+import { carriedDigest, SITE_KEY } from "../src/site/publish.ts";
 import { gatherSeasonInputs } from "../src/site/season.ts";
 import { simulate } from "../src/site/sim.ts";
 import { store, storeLabel } from "../src/store.ts";
 
 const snapshot = deriveSeason(await gatherSeasonInputs());
+// Keep the recap the last delivering digest run put there; this script has none of its own.
+const digest = await carriedDigest(snapshot.season);
+if (digest) snapshot.digest = digest;
 await store.write(SITE_KEY, snapshot);
 
 const odds = simulate(snapshot);

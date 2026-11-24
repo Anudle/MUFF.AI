@@ -1,0 +1,24 @@
+{
+  "CallerReference": "muff-site-1",
+  "Comment": "muff league site",
+  "Enabled": true,
+  "DefaultRootObject": "index.html",
+  "PriceClass": "PriceClass_100",
+  "Origins": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "Id": "muff-site-s3",
+        "DomainName": "muff-digest-history-998716768903.s3.us-east-2.amazonaws.com",
+        "OriginPath": "/site",
+        "OriginAccessControlId": "E202MFVHDGKKYI",
+        "S3OriginConfig": { "OriginAccessIdentity": "" }
+      }
+    ]
+  },
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "muff-site-s3",
+    "ViewerProtocolPolicy": "https-only",
+    "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+  }
+}

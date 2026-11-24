@@ -5,8 +5,11 @@
  * from here — the browser draws, it doesn't do arithmetic.
  */
 
+import type { Digest } from "../digest/generate.ts";
+import { teamKey } from "../digest/team-names.ts";
 import { PLAYOFF_TEAMS, REGULAR_SEASON_END } from "./config.ts";
-import type { SeasonInputs, SeasonSnapshot, TeamSeason } from "./types.ts";
+import { rankTeams } from "./sim.ts";
+import type { SeasonInputs, SeasonSnapshot, SiteDigest, TeamSeason } from "./types.ts";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -70,26 +73,48 @@ export function deriveSeason(inputs: SeasonInputs, generatedAt = new Date().toIS
       all_play: { wins: apW, losses: apL, ties: apT },
       expected_wins: round2(expected),
       luck: round2(wins + ties / 2 - expected),
+      road: null as TeamSeason["road"],
     };
   });
 
-  // swap[i][j]: team i's scores against team j's opponents. In the week j
-  // played i, i can't play itself — it plays j instead.
-  const swapRaw = inputs.teams.map((_, i) =>
-    inputs.teams.map((_, j) =>
-      scores.reduce((sum, s, w) => {
-        const opp = opponent[w][j] === i ? j : opponent[w][j];
-        return sum + (i === j ? outcome(s[i], s[opponent[w][i]]) : outcome(s[i], s[opp]));
-      }, 0),
-    ),
-  );
+  // Head-to-head so far, flat and in input order: won[a * n + b] = a's wins over b.
+  const won = new Float64Array(n * n);
+  scores.forEach((s, w) => {
+    for (let i = 0; i < n; i++) won[i * n + opponent[w][i]] += outcome(s[i], s[opponent[w][i]]);
+  });
 
-  // Standing order: wins (ties half), then points for.
-  const order = built
-    .map((t, i) => ({ t, i }))
-    .sort((a, b) => b.t.wins + b.t.ties / 2 - (a.t.wins + a.t.ties / 2) || b.t.points_for - a.t.points_for)
-    .map((x) => x.i);
+  // Standing order: wins (ties half), head-to-head among tied teams, points
+  // for — the same comparator the simulation and the bracket use (sim.ts).
+  const order = built.map((_, i) => i);
+  rankTeams(order, built.map((t) => t.wins + t.ties / 2), built.map((t) => t.points_for), won, n);
   const rank = new Map(order.map((orig, pos) => [orig, pos]));
+
+  const teams = order.map((i) => built[i]);
+  const remaining = inputs.remaining.map((wk) => ({
+    week: wk.week,
+    matchups: wk.matchups.map((m) => {
+      if (m.length !== 2) throw new Error(`Week ${wk.week}: a scheduled matchup has ${m.length} teams, expected 2.`);
+      return [rank.get(at(m[0], wk.week))!, rank.get(at(m[1], wk.week))!] as [number, number];
+    }),
+  }));
+
+  // The run-in: how much each team's remaining opponents score, against the
+  // league's average points per game. An opponent faced twice counts twice.
+  const games = scores.length;
+  const ppg = teams.map((t) => (games ? t.points_for / games : 0));
+  const leaguePpg = ppg.reduce((sum, v) => sum + v, 0) / (ppg.length || 1);
+  const faced: number[][] = teams.map(() => []);
+  for (const wk of remaining) {
+    for (const [a, b] of wk.matchups) {
+      faced[a].push(ppg[b]);
+      faced[b].push(ppg[a]);
+    }
+  }
+  teams.forEach((t, i) => {
+    if (!games || faced[i].length === 0) return;
+    const oppAvg = faced[i].reduce((sum, v) => sum + v, 0) / faced[i].length;
+    t.road = { opp_avg: round2(oppAvg), vs_league: round2(oppAvg - leaguePpg) };
+  });
 
   return {
     league: inputs.league,
@@ -97,14 +122,29 @@ export function deriveSeason(inputs: SeasonInputs, generatedAt = new Date().toIS
     through_week: inputs.played.at(-1)?.week ?? 0,
     generated_at: generatedAt,
     config: { regular_season_end: REGULAR_SEASON_END, playoff_teams: PLAYOFF_TEAMS },
-    teams: order.map((i) => built[i]),
-    swap: order.map((i) => order.map((j) => swapRaw[i][j])),
-    remaining: inputs.remaining.map((wk) => ({
-      week: wk.week,
-      matchups: wk.matchups.map((m) => {
-        if (m.length !== 2) throw new Error(`Week ${wk.week}: a scheduled matchup has ${m.length} teams, expected 2.`);
-        return [rank.get(at(m[0], wk.week))!, rank.get(at(m[1], wk.week))!] as [number, number];
-      }),
-    })),
+    teams,
+    h2h: order.map((a) => order.map((b) => won[a * n + b])),
+    remaining,
+  };
+}
+
+/**
+ * The published digest in the shape the page draws. The previous rank is
+ * looked up here, by team key (week-1 history predates canonical names), so
+ * the page's arrows are computed in code like the chat message's.
+ */
+export function toSiteDigest(
+  week: number,
+  digest: Digest,
+  previous: { rank: number; team: string }[] | null,
+): SiteDigest {
+  const was = new Map((previous ?? []).map((p) => [teamKey(p.team), p.rank]));
+  return {
+    week,
+    headline: digest.headline,
+    recap: digest.recap,
+    power_rankings: [...digest.power_rankings]
+      .sort((a, b) => a.rank - b.rank)
+      .map((p) => ({ rank: p.rank, team: p.team, comment: p.comment, prev_rank: was.get(teamKey(p.team)) ?? null })),
   };
 }
