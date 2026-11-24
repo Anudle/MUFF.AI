@@ -77,16 +77,10 @@ export function deriveSeason(inputs: SeasonInputs, generatedAt = new Date().toIS
     };
   });
 
-  // Head-to-head so far, flat and in input order: won[a * n + b] = a's wins over b.
-  const won = new Float64Array(n * n);
-  scores.forEach((s, w) => {
-    for (let i = 0; i < n; i++) won[i * n + opponent[w][i]] += outcome(s[i], s[opponent[w][i]]);
-  });
-
-  // Standing order: wins (ties half), head-to-head among tied teams, points
-  // for — the same comparator the simulation and the bracket use (sim.ts).
+  // Standing order: wins (ties half), then points for — the same comparator
+  // the simulation and the bracket use (sim.ts), and Yahoo's standings order.
   const order = built.map((_, i) => i);
-  rankTeams(order, built.map((t) => t.wins + t.ties / 2), built.map((t) => t.points_for), won, n);
+  rankTeams(order, built.map((t) => t.wins + t.ties / 2), built.map((t) => t.points_for));
   const rank = new Map(order.map((orig, pos) => [orig, pos]));
 
   const teams = order.map((i) => built[i]);
@@ -123,7 +117,6 @@ export function deriveSeason(inputs: SeasonInputs, generatedAt = new Date().toIS
     generated_at: generatedAt,
     config: { regular_season_end: REGULAR_SEASON_END, playoff_teams: PLAYOFF_TEAMS },
     teams,
-    h2h: order.map((a) => order.map((b) => won[a * n + b])),
     remaining,
   };
 }

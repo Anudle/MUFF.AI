@@ -146,9 +146,9 @@ test("simulate: forcing a winner decides that game in every run", () => {
   assert.equal(t2wins[3].avg_wins, 7);
 });
 
-// --- seeding: record, head-to-head, points for ---------------------------------
+// --- seeding: record, then points for ------------------------------------------
 
-/** Four teams level at 2-1 or below; C beat B head-to-head but has fewer points. */
+/** A, B, C all 2-1. C beat B head-to-head but has far fewer points; that must not matter. */
 const tied: SeasonInputs = {
   league: "Tie League",
   season: "2026",
@@ -161,40 +161,25 @@ const tied: SeasonInputs = {
   remaining: [{ week: 4, matchups: [["A", "B"], ["C", "D"]] }],
 };
 
-test("deriveSeason: teams level on record are ordered by head-to-head before points for", () => {
+test("seedings: teams level on record are ordered by points for, not head-to-head", () => {
   const s = deriveSeason(tied, "2026-11-17T00:00:00Z");
-  // A, B, C are all 2-1. Among them: A 1-1, B 1-1, C 1-1 — a three-way wash, so points for decides.
   assert.deepEqual(s.teams.map((t) => t.team), ["A", "B", "C", "D"]);
-  // h2h is indexed like teams: B (1) beat A (0); C (2) beat B (1).
-  assert.equal(s.h2h![1][0], 1);
-  assert.equal(s.h2h![2][1], 1);
-  assert.equal(s.h2h![1][2], 0);
-});
-
-test("seedings: a two-team tie goes to the head-to-head winner even with fewer points", () => {
-  const s = deriveSeason(tied, "2026-11-17T00:00:00Z");
   const name = (r: { order: number[] }) => r.order.map((i) => s.teams[i].team);
   // Week 4 picks: B beats A, C beats D → B 3-1, C 3-1, A 2-2.
-  // C beat B in week 1, so C is seeded above B despite 181 points to B's 300.
+  // C beat B in week 1, but B has 300 points to C's 181, so B is seeded first.
   const picked = seedings(s, { [pickKey(4, 0)]: 1, [pickKey(4, 1)]: 2 });
-  assert.deepEqual(name(picked), ["C", "B", "A", "D"]);
+  assert.deepEqual(name(picked), ["B", "C", "A", "D"]);
   assert.deepEqual([picked.wins[2], picked.losses[2], picked.unpicked], [3, 1, 0]);
 });
 
-test("seedings: unpicked games are left out, and a pick counts toward head-to-head", () => {
+test("seedings: unpicked games are left out; a pick adds a win and a loss but no points", () => {
   const s = deriveSeason(tied, "2026-11-17T00:00:00Z");
   const none = seedings(s);
   assert.equal(none.unpicked, 2);
   assert.deepEqual(none.order, [0, 1, 2, 3]);
-  // A beats B in week 4: A 3-1 alone on top; B 2-2, and that is one pick, one game left out.
+  // A beats B in week 4: A 3-1 alone on top; B 2-2; one pick, one game left out.
   const one = seedings(s, { [pickKey(4, 0)]: 0 });
   assert.deepEqual([one.order[0], one.wins[0], one.losses[1], one.unpicked], [0, 3, 2, 1]);
-});
-
-test("simulate: a snapshot without h2h still works (falls back to points for)", () => {
-  const s = league([{ week: 11, matchups: [[0, 5], [1, 4], [2, 3]] }]);
-  assert.equal(s.h2h, undefined);
-  assert.equal(seedings(s).order.length, 6);
 });
 
 test("toSiteDigest: rankings sorted, previous rank looked up by team key", () => {

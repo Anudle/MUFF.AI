@@ -56,7 +56,7 @@ can get `site/*` but cannot list `runs/`. No model call is made for the site.
 **The bracket is deterministic; only the odds are simulated.** "Playoff
 picture" is today's standings plus the picked winners (`seedings()` in
 `sim.ts`): unpicked games are left out and the page says how many, and a
-picked game adds a win, a loss and a head-to-head result but no points. So
+picked game adds a win and a loss but no points. So
 the odds bars (which simulate scores for every remaining game) and the
 bracket can disagree about a bubble team; they answer different questions.
 Pairings are 1v8, 4v5, 2v7, 3v6 in week 15 with no reseeding, per
@@ -99,15 +99,14 @@ compete.
   "if everyone keeps scoring like they have", not a projection — no injuries,
   byes or lineups.
 
-**Standing order:** wins (a tie is half), then head-to-head among the teams
-level on record, then points for. Anu confirmed on 2026-11-23 that the
-head-to-head tiebreak in `league-rules.md` comes first, with points for as
-the fallback. One comparator, `rankTeams()` in `sim.ts`, orders the snapshot
-(`derive.ts`), every simulated finish and the bracket; the snapshot carries
-the head-to-head results so far as `h2h`. Head-to-head here is net wins in
-games among just the tied teams, and a tie of three or more is ranked in one
-pass rather than re-broken after each team is placed — Yahoo's handling of
-multi-team ties may differ and has not been checked.
+**Standing order:** wins (a tie is half), then points for — the order of
+Yahoo's standings page for this league. One comparator, `rankTeams()` in
+`sim.ts`, orders the snapshot (`derive.ts`), every simulated finish and the
+bracket. A head-to-head tiebreak (the wording in `league-rules.md`) was
+shipped briefly on 2026-11-23 and removed the same day: it put O-moss-em
+above The Baker Mayfields among the 5-5 teams, and Yahoo's standings did
+not. If Yahoo's final seeding ever differs from its standings order, this
+comparator is the one place to change.
 
 ## Access
 
@@ -177,6 +176,13 @@ the distribution is the only way in, and only to `site/`.
 npm run site:bundle
 aws s3 sync dist/site/ s3://<bucket>/site/
 ```
+
+`site:bundle` stamps the `app.js` and `style.css` URLs in the copied
+`index.html` with a content hash (`app.js?v=…`). The bucket sets no
+`Cache-Control`, so without it a returning browser pairs the new page with
+its cached old script and draws empty sections (seen on 2026-11-23, when the
+bracket shipped). The distribution forwards no query strings, so S3 is still
+asked for plain `app.js`.
 
 **Never add `--delete`.** `season.json` is written by the digest run and is
 never in `dist/site/`, so `--delete` would remove it on every upload. The CLI
