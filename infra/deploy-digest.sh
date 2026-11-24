@@ -118,6 +118,7 @@ aws iam put-role-policy --role-name "$ROLE" --policy-name "$POLICY_NAME" \
        "Action": ["s3:GetObject", "s3:PutObject"],
        "Resource": ["arn:aws:s3:::'"$BUCKET"'/'"$HISTORY_KEY"'",
                     "arn:aws:s3:::'"$BUCKET"'/runs/*",
+                    "arn:aws:s3:::'"$BUCKET"'/site/*",
                     "arn:aws:s3:::'"$BUCKET"'/players/*"]},
       {"Effect": "Allow",
        "Action": "s3:GetObject",

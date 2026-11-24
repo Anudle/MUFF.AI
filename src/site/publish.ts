@@ -11,13 +11,35 @@
 import { store } from "../store.ts";
 import { deriveSeason } from "./derive.ts";
 import { gatherSeasonInputs } from "./season.ts";
+import type { SeasonSnapshot, SiteDigest } from "./types.ts";
 
 export const SITE_KEY = "site/season.json";
 
-/** Returns the key written, or null if anything failed (never throws). */
-export async function publishSite(): Promise<string | null> {
+/**
+ * The digest already on the site, so a snapshot rebuilt without one (a dry
+ * run, `npm run site:snapshot`) keeps the week's recap instead of erasing it.
+ * It reads the snapshot's own key rather than the run archive: the digest
+ * role can get `site/*` but cannot list `runs/`.
+ */
+export async function carriedDigest(season: string): Promise<SiteDigest | undefined> {
+  try {
+    const current = await store.read<SeasonSnapshot>(SITE_KEY);
+    return current?.season === season ? current.digest : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Returns the key written, or null if anything failed (never throws).
+ * Pass `digest` only for a run that is delivering: what the site shows is
+ * what the chat saw.
+ */
+export async function publishSite(digest?: SiteDigest): Promise<string | null> {
   try {
     const snapshot = deriveSeason(await gatherSeasonInputs());
+    const shown = digest ?? (await carriedDigest(snapshot.season));
+    if (shown) snapshot.digest = shown;
     await store.write(SITE_KEY, snapshot);
     return SITE_KEY;
   } catch (e) {

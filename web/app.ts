@@ -2,10 +2,13 @@
  * MUFF-71 — the league site. Draws one season snapshot (season.json); the
  * only arithmetic done here is the playoff simulation, because the what-if
  * picker has to re-run it on every tap (src/site/sim.ts, shared with tests).
- * No framework: four sections of DOM, rebuilt from state.
+ * The bracket is not simulated: it is today's standings plus the picks, seeded
+ * by the same comparator (seedings, also in sim.ts). The recap and power
+ * rankings are the delivered digest, drawn as written.
+ * No framework: a handful of sections of DOM, rebuilt from state.
  */
 
-import { pickKey, simulate, type Picks, type TeamOdds } from "../src/site/sim.ts";
+import { pickKey, seedings, simulate, type Picks, type TeamOdds } from "../src/site/sim.ts";
 import type { SeasonSnapshot } from "../src/site/types.ts";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -25,10 +28,6 @@ function el<K extends keyof HTMLElementTagNameMap>(
 const record = (w: number, l: number, t: number) => `${w}-${l}${t ? `-${t}` : ""}`;
 const pct = (p: number) => (p > 0 && p < 0.005 ? "<1%" : p < 1 && p > 0.995 ? ">99%" : `${Math.round(p * 100)}%`);
 const signed = (n: number, digits = 1) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n).toFixed(digits)}`;
-
-/** Sequential blue, light → dark (reversed on a dark surface so "few" recedes). */
-const RAMP = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6", "#256abf", "#1c5cab", "#184f95", "#104281", "#0d366b"];
-const dark = matchMedia("(prefers-color-scheme: dark)");
 
 const ME_KEY = "muff.me";
 function loadMe(): string {
@@ -58,7 +57,6 @@ async function main() {
   let picks: Picks = {};
   let odds: TeamOdds[] = baseline;
   let me = teams.findIndex((t) => t.team === loadMe());
-  let swapSel: [number, number] | null = null;
 
   $("league").textContent = `${snap.league} · ${snap.season}`;
   $("asof").textContent =
@@ -77,7 +75,6 @@ async function main() {
   select.addEventListener("change", () => {
     me = teams.findIndex((t) => t.team === select.value);
     saveMe(select.value);
-    swapSel = null;
     render();
   });
 
@@ -189,77 +186,144 @@ async function main() {
     $("luck").replaceChildren(...rows);
   }
 
-  function renderSwap() {
-    const games = snap.through_week ? teams[0].scores.length : 0;
-    const flat = snap.swap.flat();
-    const lo = Math.min(...flat), hi = Math.max(...flat);
-    const ramp = dark.matches ? [...RAMP].reverse() : RAMP;
-    const step = (v: number) => (hi === lo ? 6 : Math.round(((v - lo) / (hi - lo)) * (RAMP.length - 1)));
-    const fmt = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(1));
-    const asRecord = (v: number) => `${fmt(v)}-${fmt(games - v)}`;
+  /** Seed numbers in bracket order for a power-of-two field: 8 → 1,8,4,5,2,7,3,6. */
+  function bracketOrder(size: number): number[] {
+    let seeds = [1];
+    while (seeds.length < size) seeds = seeds.flatMap((s) => [s, seeds.length * 2 + 1 - s]);
+    return seeds;
+  }
 
-    const head = el("tr", {}, [el("th"), ...teams.map((t, j) => {
-      const th = el("th", { text: String(j + 1) });
-      th.scope = "col";
-      th.title = `${t.team}'s schedule`;
-      return th;
-    })]);
-    const body = teams.map((t, i) => {
-      const th = el("th", {}, [el("b", { text: String(i + 1) }), t.team]);
-      th.scope = "row";
-      const tr = el("tr", { class: i === me ? "me" : "" }, [
-        th,
-        ...snap.swap[i].map((v, j) => {
-          const s = step(v);
-          const btn = el("button", { text: fmt(v) });
-          btn.type = "button";
-          btn.style.background = ramp[s];
-          // Ink flips at the ramp's midpoint, in whichever direction the ramp runs.
-          const onDarkFill = dark.matches ? s <= 6 : s >= 6;
-          btn.style.color = onDarkFill ? "#fff" : "#0b0b0b";
-          btn.setAttribute("aria-label", i === j ? `${t.team}, real record ${asRecord(v)}` : `${t.team} with ${teams[j].team}'s schedule: ${asRecord(v)}`);
-          btn.addEventListener("click", () => {
-            swapSel = [i, j];
-            renderSwap();
-          });
-          const sel = swapSel && swapSel[0] === i && swapSel[1] === j;
-          return el("td", { class: `${i === j ? "real" : ""}${sel ? " sel" : ""}` }, [btn]);
-        }),
+  const baseField = new Set(seedings(snap).order.slice(0, spots));
+  function renderBracket() {
+    const s = seedings(snap, picks);
+    const n = Object.keys(picks).length;
+    const firstWeek = snap.config.regular_season_end + 1;
+    $("bracket-note").textContent =
+      gamesLeft === 0
+        ? `The regular season is over. This is the week ${firstWeek} bracket.`
+        : n === 0
+          ? "Who would play whom if the regular season ended today. Pick winners above to move it."
+          : `Today's standings plus your ${n} pick${n === 1 ? "" : "s"}.` +
+            (s.unpicked ? ` The ${s.unpicked} game${s.unpicked === 1 ? "" : "s"} you haven't picked ${s.unpicked === 1 ? "isn't" : "aren't"} counted.` : "");
+
+    const slot = (seed: number) => {
+      const i = s.order[seed - 1];
+      return el("div", { class: `slot${i === me ? " me" : ""}` }, [
+        el("span", { class: "seed num", text: String(seed) }),
+        el("span", { class: "slot-name", text: teams[i].team }),
+        ...(baseField.has(i) || seed > spots ? [] : [el("small", { class: "up", text: "in" })]),
+        el("small", { class: "num", text: record(s.wins[i], s.losses[i], s.ties[i]) }),
       ]);
-      return tr;
-    });
-    $("swap").replaceChildren(el("thead", {}, [head]), el("tbody", {}, body));
+    };
 
-    const detail = $("swap-detail");
-    const focus = swapSel ? swapSel[0] : me;
-    if (focus < 0) {
-      detail.textContent = "Pick your team at the top to see your best and worst case.";
-      return;
+    const blocks: HTMLElement[] = [];
+    const isBracket = spots >= 2 && (spots & (spots - 1)) === 0 && spots <= teams.length;
+    if (isBracket) {
+      const seeds = bracketOrder(spots);
+      const games: HTMLElement[] = [];
+      for (let g = 0; g < seeds.length; g += 2) games.push(el("div", { class: "tie" }, [slot(seeds[g]), slot(seeds[g + 1])]));
+      if (spots >= 4) {
+        const rounds = Math.log2(spots);
+        const next = rounds === 2 ? "Final" : rounds === 3 ? "Semifinal" : "Next round";
+        blocks.push(el("p", { class: "round", text: `${rounds === 3 ? "Quarterfinals" : rounds === 2 ? "Semifinals" : "First round"} · week ${firstWeek}` }));
+        for (let g = 0; g < games.length; g += 2) {
+          blocks.push(
+            el("div", { class: "half" }, [
+              el("div", { class: "ties" }, [games[g], games[g + 1]]),
+              el("div", { class: "next" }, [el("b", { text: next }), el("span", { text: `week ${firstWeek + 1}` }), el("span", { text: "winners meet" })]),
+            ]),
+          );
+        }
+        if (rounds === 3) blocks.push(el("p", { class: "round", text: `Final · week ${firstWeek + 2}` }));
+      } else {
+        blocks.push(el("p", { class: "round", text: `Final · week ${firstWeek}` }), ...games);
+      }
+    } else {
+      blocks.push(...s.order.slice(0, spots).map((_, k) => slot(k + 1)));
     }
-    const row = snap.swap[focus];
-    const real = row[focus];
-    if (swapSel && swapSel[0] !== swapSel[1]) {
-      const v = row[swapSel[1]];
-      detail.textContent = `${teams[focus].team} with ${teams[swapSel[1]].team}'s schedule: ${asRecord(v)} instead of ${asRecord(real)}.`;
-      return;
+    const out = s.order.slice(spots, spots + 2);
+    if (out.length) {
+      blocks.push(el("p", { class: "round", text: "First out" }), el("div", { class: "tie outside" }, out.map((_, k) => slot(spots + k + 1))));
     }
-    const others = row.map((v, j) => ({ v, j })).filter((x) => x.j !== focus);
-    const best = others.reduce((a, b) => (b.v > a.v ? b : a));
-    const worst = others.reduce((a, b) => (b.v < a.v ? b : a));
-    detail.textContent =
-      `${teams[focus].team} is really ${asRecord(real)}. Best case ${asRecord(best.v)} with ${teams[best.j].team}'s schedule; ` +
-      `worst case ${asRecord(worst.v)} with ${teams[worst.j].team}'s.`;
+    $("bracket").replaceChildren(...blocks);
+  }
+
+  function renderDigest() {
+    const d = snap.digest;
+    $("recap-section").hidden = !d;
+    $("rankings-section").hidden = !d || d.power_rankings.length === 0;
+    if (!d) return;
+    $("h-recap").textContent = `Week ${d.week} recap`;
+    $("recap-headline").textContent = d.headline;
+    $("recap").textContent = d.recap;
+    const moved = d.power_rankings.some((p) => p.prev_rank !== null);
+    $("rankings-note").textContent = `After week ${d.week}, as posted in the group.${moved ? " Arrows are the change from last week." : ""}`;
+    $("rankings").replaceChildren(
+      ...d.power_rankings.map((p) => {
+        const delta = p.prev_rank === null ? null : p.prev_rank - p.rank;
+        const move =
+          !moved ? null
+          : delta === null ? el("small", { class: "move", text: "new" })
+          : delta === 0 ? el("small", { class: "move", text: "—" })
+          : el("small", { class: `move num ${delta > 0 ? "up" : "down"}`, text: `${delta > 0 ? "▲" : "▼"}${Math.abs(delta)}` });
+        return el("li", { class: me >= 0 && teams[me].team === p.team ? "me" : "" }, [
+          el("span", { class: "rank num", text: String(p.rank) }),
+          el("div", { class: "rank-body" }, [
+            el("b", {}, [p.team, ...(move ? [" ", move] : [])]),
+            el("p", { text: p.comment }),
+          ]),
+        ]);
+      }),
+    );
+  }
+
+  /** Remaining opponents per team, as indexes into `teams`, in week order. */
+  const opponents: number[][] = teams.map(() => []);
+  for (const wk of snap.remaining) {
+    for (const [a, b] of wk.matchups) {
+      opponents[a].push(b);
+      opponents[b].push(a);
+    }
+  }
+
+  function renderRoad() {
+    // A snapshot written before this section existed has no `road`; hide it.
+    const rows = teams.map((t, i) => ({ t, i, road: t.road ?? null })).filter((x) => x.road !== null);
+    $("road-section").hidden = rows.length === 0;
+    if (rows.length === 0) return;
+    const max = Math.max(1, ...rows.map((x) => Math.abs(x.road!.vs_league)));
+    $("road-note").textContent =
+      "Points per game scored by each team's remaining opponents, compared with the league average. Easiest run-in first.";
+    $("road").replaceChildren(
+      ...rows
+        .sort((a, b) => a.road!.vs_league - b.road!.vs_league)
+        .map(({ t, i, road }) => {
+          const easier = road!.vs_league <= 0;
+          // Easier runs left in blue, harder runs right in red (the luck rows' sides, recoloured in CSS).
+          const bar = el("i", { class: easier ? "neg" : "pos" });
+          bar.style.width = `${(Math.abs(road!.vs_league) / max) * 50}%`;
+          const row = el("div", { class: `luck-row road-row${i === me ? " me" : ""}` }, [
+            el("div", { class: "luck-name", text: t.team }),
+            el("div", { class: "div" }, [bar]),
+            el("div", { class: "luck-val num", text: `${Math.abs(road!.vs_league).toFixed(1)} ${easier ? "easier" : "harder"}` }),
+            el("small", { class: "road-opp", text: `vs ${opponents[i].map((o) => teams[o].team).join(", ")}` }),
+          ]);
+          row.title = `${t.team}: remaining opponents average ${road!.opp_avg.toFixed(1)} points a game`;
+          return row;
+        }),
+    );
   }
 
   function render() {
     renderSticky();
     renderOdds();
     renderWhatIf();
+    renderBracket();
+    renderDigest();
     renderLuck();
-    renderSwap();
+    renderRoad();
   }
 
-  dark.addEventListener("change", renderSwap);
   render();
   $("main").hidden = false;
 }

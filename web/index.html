@@ -4,13 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark">
 <title>MUFF — playoff race</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-8 -10 116 110'%3E%3Cpath d='M2 4H34L50 42 66 4H98V20H90V70H98V86H62V70H70V36L50 80 30 36V70H38V86H2V70H10V20H2Z' fill='%230b0b0b' stroke='%23c9ad6a' stroke-width='7' stroke-linejoin='miter' paint-order='stroke'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="top">
-  <p class="eyebrow" id="league">MUFF</p>
+  <!-- The wordmark is drawn here, not loaded: a varsity block M in Monarch black and gold, with UFF cut to match. -->
+  <svg class="wordmark" viewBox="-6 -2 342 94" role="img" aria-label="MUFF">
+    <defs>
+      <g id="muff">
+        <path d="M2 4H34L50 42 66 4H98V20H90V70H98V86H62V70H70V36L50 80 30 36V70H38V86H2V70H10V20H2Z"/>
+        <path transform="translate(108 0)" d="M2 4H36V20H30V64L36 70H48L54 64V20H48V4H82V20H74V72L60 86H24L10 72V20H2Z"/>
+        <path transform="translate(198 0)" d="M2 4H60V26H46V20H30V36H44V52H30V70H38V86H2V70H10V20H2Z"/>
+        <path transform="translate(268 0)" d="M2 4H60V26H46V20H30V36H44V52H30V70H38V86H2V70H10V20H2Z"/>
+      </g>
+    </defs>
+    <use href="#muff" class="wm-edge"/>
+    <use href="#muff" class="wm-band"/>
+    <use href="#muff" class="wm-fill"/>
+  </svg>
+  <p class="eyebrow" id="league">Monarch United Fantasy</p>
   <h1>The playoff race</h1>
   <p class="sub" id="asof">Loading the season…</p>
   <label class="team-select">
@@ -22,6 +37,12 @@
 <div class="sticky" id="sticky" hidden></div>
 
 <main id="main" hidden>
+  <section aria-labelledby="h-recap" id="recap-section" hidden>
+    <h2 id="h-recap">This week</h2>
+    <p class="headline" id="recap-headline"></p>
+    <p class="recap" id="recap"></p>
+  </section>
+
   <section aria-labelledby="h-odds">
     <h2 id="h-odds">Playoff odds</h2>
     <p class="note" id="odds-note"></p>
@@ -33,8 +54,21 @@
       <h2 id="h-whatif">What if…</h2>
       <button type="button" id="reset" class="ghost" disabled>Reset picks</button>
     </div>
-    <p class="note">Tap a winner in any remaining game and the odds above update.</p>
+    <p class="note">Tap a winner in any remaining game. The odds above and the bracket below update.</p>
     <div id="whatif"></div>
+  </section>
+
+  <section aria-labelledby="h-bracket" id="bracket-section">
+    <h2 id="h-bracket">Playoff picture</h2>
+    <p class="note" id="bracket-note"></p>
+    <div id="bracket"></div>
+    <p class="fine">Seeded by record, then head-to-head between the tied teams, then points for. Picked games count as a win and a loss but add no points. The bracket is not reseeded between rounds.</p>
+  </section>
+
+  <section aria-labelledby="h-rankings" id="rankings-section" hidden>
+    <h2 id="h-rankings">Power rankings</h2>
+    <p class="note" id="rankings-note"></p>
+    <ol id="rankings" class="rankings"></ol>
   </section>
 
   <section aria-labelledby="h-luck">
@@ -43,17 +77,16 @@
     <div id="luck" class="luck"></div>
   </section>
 
-  <section aria-labelledby="h-swap">
-    <h2 id="h-swap">Trade schedules</h2>
-    <p class="note">Each row is a team; each column is whose schedule they play. The outlined cell is the real record. Tap a cell for the detail.</p>
-    <p class="detail" id="swap-detail" aria-live="polite"></p>
-    <div class="scroll"><table id="swap" class="swap"></table></div>
+  <section aria-labelledby="h-road" id="road-section">
+    <h2 id="h-road">The road ahead</h2>
+    <p class="note" id="road-note"></p>
+    <div id="road" class="luck"></div>
   </section>
 </main>
 
 <footer>
   <p id="foot"></p>
-  <p>Odds are a simulation: every team keeps scoring like it has so far, 10,000 times over. No injuries, byes or lineups. Ties on record are broken by points for.</p>
+  <p>Odds are a simulation: every team keeps scoring like it has so far, 10,000 times over. No injuries, byes or lineups. Ties on record are broken by head-to-head, then points for.</p>
 </footer>
 <script src="app.js"></script>
 </body>

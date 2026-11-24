@@ -237,6 +237,15 @@ script prints, or from your laptop with
 - **Flexible window**: ±15 min, because "some time around 5am" is the actual
   requirement — the digest fires at 7 and the TTL is 24h.
 
+## The league site (MUFF-71)
+
+A static page served by CloudFront from the `site/` prefix of the digest
+history bucket, which stays private (Origin Access Control + a bucket policy
+scoped to one distribution). The digest Lambda rewrites `site/season.json` on
+every run, which is why its role has a grant on `site/*`. Unlike the Lambdas
+above it has no deploy script yet: the pieces, the reasoning, the upload
+command and the break-it results are in `docs/league-site.md` ("Hosting").
+
 ## Connecting a client
 
 ```

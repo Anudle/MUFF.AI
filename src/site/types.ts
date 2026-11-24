@@ -21,6 +21,24 @@ export interface TeamSeason {
   expected_wins: number;
   /** Actual wins (ties count half) minus expected_wins. Positive = lucky. */
   luck: number;
+  /**
+   * The run-in: average season scoring of this team's remaining opponents
+   * (one entry per game left), and that figure minus the league's average
+   * points per game. Negative = easier than average. Null once no games remain.
+   */
+  road: { opp_avg: number; vs_league: number } | null;
+}
+
+/**
+ * The week's published digest, as the page shows it. Prose is the model's
+ * (already gated and delivered to the chat); `prev_rank` is looked up in code
+ * from last week's published rankings, exactly like the arrows in render.ts.
+ */
+export interface SiteDigest {
+  week: number;
+  headline: string;
+  recap: string;
+  power_rankings: { rank: number; team: string; comment: string; prev_rank: number | null }[];
 }
 
 export interface SeasonSnapshot {
@@ -30,12 +48,19 @@ export interface SeasonSnapshot {
   through_week: number;
   generated_at: string;
   config: { regular_season_end: number; playoff_teams: number };
-  /** Sorted by standing: wins (ties half), then points for. */
+  /** Sorted by standing: wins (ties half), then head-to-head among the tied teams, then points for. */
   teams: TeamSeason[];
-  /** swap[i][j] = wins team i would have with team j's schedule (ties count half). */
-  swap: number[][];
+  /**
+   * Head-to-head so far: `h2h[a][b]` is the games team a has won against team
+   * b (a tie is half each), indexes into `teams`. The seeding tiebreak reads
+   * it. Absent on snapshots written before the bracket existed (treated as no
+   * games played).
+   */
+  h2h?: number[][];
   /** Regular-season games still to play; matchups are index pairs into `teams`. */
   remaining: { week: number; matchups: [number, number][] }[];
+  /** The latest delivered digest. Absent until a delivering run has written one. */
+  digest?: SiteDigest;
 }
 
 /** What deriveSeason needs — plain shapes, so tests need no provider. */

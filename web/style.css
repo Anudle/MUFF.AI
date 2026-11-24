@@ -1,37 +1,24 @@
+/* One theme, dark: black and gold is the league's look, so the page does not follow the device setting. */
 :root {
-  --page: #f9f9f7;
-  --surface: #fcfcfb;
-  --ink: #0b0b0b;
-  --ink-2: #52514e;
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --ink: #f0efec;
+  --ink-2: #c3c2b7;
   --muted: #898781;
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
-  --border: rgba(11, 11, 11, 0.1);
-  --series: #2a78d6;
-  --series-soft: #cde2fb;
-  --neg: #e34948;
-  --mid: #f0efec;
-  --me: rgba(42, 120, 214, 0.1);
-  --up: #006300;
-  --down: #d03b3b;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --page: #0d0d0d;
-    --surface: #1a1a19;
-    --ink: #f0efec;
-    --ink-2: #c3c2b7;
-    --grid: #2c2c2a;
-    --axis: #383835;
-    --border: rgba(255, 255, 255, 0.1);
-    --series: #3987e5;
-    --series-soft: #0d366b;
-    --neg: #e66767;
-    --mid: #383835;
-    --me: rgba(57, 135, 229, 0.16);
-    --up: #0ca30c;
-    --down: #e66767;
-  }
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.1);
+  --series: #3987e5;
+  --series-soft: #0d366b;
+  --neg: #e66767;
+  --mid: #383835;
+  --me: rgba(57, 135, 229, 0.16);
+  --up: #0ca30c;
+  --down: #e66767;
+  --gold: #c9ad6a;
+  --wm-fill: #000;
+  --wm-edge: transparent;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -39,10 +26,15 @@ body {
   margin: 0;
   background: var(--page);
   color: var(--ink);
+  border-top: 4px solid var(--gold);
   font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 header.top, main, footer { max-width: 720px; margin: 0 auto; padding: 0 16px; }
-header.top { padding-top: 28px; }
+header.top { padding-top: 24px; }
+.wordmark { display: block; height: 46px; width: auto; margin: 0 0 14px; overflow: visible; }
+.wm-edge { fill: none; stroke: var(--wm-edge); stroke-width: 9; stroke-linejoin: miter; }
+.wm-band { fill: none; stroke: var(--gold); stroke-width: 6; stroke-linejoin: miter; }
+.wm-fill { fill: var(--wm-fill); }
 .eyebrow { margin: 0; color: var(--ink-2); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
 h1 { margin: 2px 0 4px; font-size: 30px; line-height: 1.1; letter-spacing: -0.02em; text-wrap: balance; }
 .sub { margin: 0; color: var(--ink-2); }
@@ -98,6 +90,45 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .ghost:disabled { opacity: 0.45; cursor: default; }
 :focus-visible { outline: 2px solid var(--series); outline-offset: 2px; }
 
+/* This week: the delivered digest, as written. */
+.headline { margin: 10px 0 8px; font-size: 17px; font-weight: 600; font-style: italic; line-height: 1.3; color: var(--gold); text-wrap: balance; }
+.recap { margin: 0; color: var(--ink); font-size: 15px; line-height: 1.55; white-space: pre-line; }
+.fine { margin: 14px 0 0; color: var(--muted); font-size: 12px; }
+
+/* Playoff picture: first-round ties on the left, the round they feed on the right. */
+.round { margin: 14px 0 6px; color: var(--muted); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.round:first-child { margin-top: 0; }
+.half { display: grid; grid-template-columns: minmax(0, 1fr) 84px; margin-bottom: 10px; }
+.ties { display: grid; gap: 8px; min-width: 0; }
+.tie { border: 1px solid var(--axis); border-radius: 10px; overflow: hidden; }
+.tie.outside { border-style: dashed; }
+.slot { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 4px 10px; font-size: 14px; }
+.slot + .slot { border-top: 1px solid var(--grid); }
+.slot.me { background: var(--me); }
+.seed { flex: none; width: 18px; color: var(--gold); font-size: 12px; font-weight: 600; text-align: right; }
+.slot-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot small { flex: none; color: var(--muted); font-size: 12px; }
+.slot small.up { color: var(--up); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.next {
+  display: flex; flex-direction: column; justify-content: center; gap: 1px;
+  margin: 19px 0 19px 0; padding-left: 12px;
+  border: 1px solid var(--axis); border-left: 0; border-radius: 0 10px 10px 0;
+  color: var(--muted); font-size: 12px; line-height: 1.3;
+}
+.next b { color: var(--ink-2); font-weight: 600; }
+
+/* Power rankings: rank, name and movement, then the comment. */
+.rankings { list-style: none; margin: 0; padding: 0; }
+.rankings li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 8px; padding: 9px 8px; border-radius: 8px; }
+.rankings li + li { border-top: 1px solid var(--grid); }
+.rankings li.me { background: var(--me); }
+.rank { color: var(--gold); font-weight: 600; text-align: right; }
+.rank-body b { font-size: 14px; }
+.rank-body p { margin: 2px 0 0; color: var(--ink-2); font-size: 14px; line-height: 1.45; }
+.move { margin-left: 4px; font-weight: 400; font-size: 12px; color: var(--muted); }
+.move.up { color: var(--up); }
+.move.down { color: var(--down); }
+
 /* Luck: diverging bar around a centre line. */
 .luck-row { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr) 46px; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; }
 .luck-row.me { background: var(--me); }
@@ -110,23 +141,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .div i.neg { right: 50%; background: var(--neg); border-radius: 4px 0 0 4px; }
 .luck-val { font-size: 14px; font-weight: 600; text-align: right; }
 
-/* Schedule swap heatmap. */
-.scroll { overflow-x: auto; margin: 0 -16px; padding: 0 16px; }
-.swap { border-collapse: separate; border-spacing: 2px; font-size: 11px; }
-.swap th { font-weight: 400; color: var(--ink-2); }
-.swap thead th { width: 26px; padding-bottom: 2px; }
-.swap tbody th { text-align: left; white-space: nowrap; padding-right: 6px; font-size: 12px; max-width: 132px; overflow: hidden; text-overflow: ellipsis; }
-.swap tbody th b { display: inline-block; width: 18px; color: var(--muted); font-weight: 400; }
-.swap tbody th, .swap thead th:first-child { position: sticky; left: 0; z-index: 1; background: var(--surface); }
-.swap tr.me th { color: var(--ink); font-weight: 600; }
-.swap td { padding: 0; }
-.swap td button {
-  display: block; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 4px;
-  font-size: 11px; font-variant-numeric: tabular-nums;
-}
-.swap td.real button { outline: 2px solid var(--ink); outline-offset: -2px; }
-.swap td.sel button { outline: 2px solid var(--neg); outline-offset: -2px; }
-.detail { min-height: 2.9em; margin: 0 0 10px; font-size: 14px; }
+/* The road ahead reuses the luck rows; only the value column is wider. */
+.road-row { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 84px; row-gap: 0; }
+.road-row .div i.neg { background: var(--series); }
+.road-row .div i.pos { background: var(--neg); }
+.road-opp { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
 
 footer { padding-bottom: 40px; color: var(--muted); font-size: 12px; }
 footer p { margin: 0 0 6px; }

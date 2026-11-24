@@ -1,6 +1,6 @@
 /**
  * MUFF-71 — the league site's numbers. Pins the pure derive (all-play, luck,
- * schedule swap), the simulation's invariants (it is seeded, so these are
+ * the run-in), the simulation's invariants (it is seeded, so these are
  * exact, not statistical), and publishSite's "never throws" promise to the
  * digest run.
  */
@@ -10,8 +10,8 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { after, before, test } from "node:test";
-import { deriveSeason } from "../src/site/derive.ts";
-import { pickKey, simulate } from "../src/site/sim.ts";
+import { deriveSeason, toSiteDigest } from "../src/site/derive.ts";
+import { pickKey, seedings, simulate } from "../src/site/sim.ts";
 import type { SeasonInputs, SeasonSnapshot } from "../src/site/types.ts";
 
 const game = (a: string, pa: number, b: string, pb: number) => [
@@ -60,18 +60,18 @@ test("deriveSeason: luck is actual minus expected wins and nets to zero across t
   assert.ok(Math.abs(net) < 0.05, `luck nets to ~0, got ${net}`);
 });
 
-test("deriveSeason: schedule swap — diagonal is the real record, off-diagonal replays the other schedule", () => {
-  snap.teams.forEach((t, i) => assert.equal(snap.swap[i][i], t.wins + t.ties / 2));
-  const i = (name: string) => snap.teams.findIndex((t) => t.team === name);
-  // D with A's schedule: wk1 vs B (40<60 L), wk2 A's opponent is D itself, so D plays A (80<90 L).
-  assert.equal(snap.swap[i("D")][i("A")], 0);
-  // D with B's schedule: wk1 vs A (L), wk2 vs C (80>70 W).
-  assert.equal(snap.swap[i("D")][i("B")], 1);
-});
-
 test("deriveSeason: remaining matchups are index pairs into the sorted teams", () => {
   const names = snap.remaining[0].matchups.map((m) => m.map((x) => snap.teams[x].team));
   assert.deepEqual(names, [["A", "C"], ["B", "D"]]);
+});
+
+test("deriveSeason: the run-in is remaining opponents' scoring against the league average", () => {
+  // Points per game: A 95, B 65, C 60, D 60 — league 70. Week 3 is A-C and B-D.
+  assert.deepEqual(byName(snap, "A").road, { opp_avg: 60, vs_league: -10 });
+  assert.deepEqual(byName(snap, "C").road, { opp_avg: 95, vs_league: 25 });
+  assert.deepEqual(byName(snap, "D").road, { opp_avg: 65, vs_league: -5 });
+  const done = deriveSeason({ ...inputs, remaining: [] }, "2026-11-17T00:00:00Z");
+  assert.equal(done.teams.every((t) => t.road === null), true);
 });
 
 test("deriveSeason: refuses a week where a team has no matchup, or an unknown team", () => {
@@ -105,8 +105,8 @@ function league(remaining: SeasonSnapshot["remaining"]): SeasonSnapshot {
       all_play: { wins: 0, losses: 0, ties: 0 },
       expected_wins: 0,
       luck: 0,
+      road: null,
     })),
-    swap: [],
     remaining,
   };
 }
@@ -144,6 +144,79 @@ test("simulate: forcing a winner decides that game in every run", () => {
   assert.equal(t3wins[2].playoff, 0);
   assert.equal(t2wins[2].playoff, 1);
   assert.equal(t2wins[3].avg_wins, 7);
+});
+
+// --- seeding: record, head-to-head, points for ---------------------------------
+
+/** Four teams level at 2-1 or below; C beat B head-to-head but has fewer points. */
+const tied: SeasonInputs = {
+  league: "Tie League",
+  season: "2026",
+  teams: ["A", "B", "C", "D"].map((name) => ({ name, manager: null })),
+  played: [
+    { week: 1, matchups: [game("A", 100, "D", 50), game("C", 61, "B", 60)] },
+    { week: 2, matchups: [game("A", 100, "C", 50), game("B", 120, "D", 50)] },
+    { week: 3, matchups: [game("B", 120, "A", 100), game("C", 70, "D", 50)] },
+  ],
+  remaining: [{ week: 4, matchups: [["A", "B"], ["C", "D"]] }],
+};
+
+test("deriveSeason: teams level on record are ordered by head-to-head before points for", () => {
+  const s = deriveSeason(tied, "2026-11-17T00:00:00Z");
+  // A, B, C are all 2-1. Among them: A 1-1, B 1-1, C 1-1 — a three-way wash, so points for decides.
+  assert.deepEqual(s.teams.map((t) => t.team), ["A", "B", "C", "D"]);
+  // h2h is indexed like teams: B (1) beat A (0); C (2) beat B (1).
+  assert.equal(s.h2h![1][0], 1);
+  assert.equal(s.h2h![2][1], 1);
+  assert.equal(s.h2h![1][2], 0);
+});
+
+test("seedings: a two-team tie goes to the head-to-head winner even with fewer points", () => {
+  const s = deriveSeason(tied, "2026-11-17T00:00:00Z");
+  const name = (r: { order: number[] }) => r.order.map((i) => s.teams[i].team);
+  // Week 4 picks: B beats A, C beats D → B 3-1, C 3-1, A 2-2.
+  // C beat B in week 1, so C is seeded above B despite 181 points to B's 300.
+  const picked = seedings(s, { [pickKey(4, 0)]: 1, [pickKey(4, 1)]: 2 });
+  assert.deepEqual(name(picked), ["C", "B", "A", "D"]);
+  assert.deepEqual([picked.wins[2], picked.losses[2], picked.unpicked], [3, 1, 0]);
+});
+
+test("seedings: unpicked games are left out, and a pick counts toward head-to-head", () => {
+  const s = deriveSeason(tied, "2026-11-17T00:00:00Z");
+  const none = seedings(s);
+  assert.equal(none.unpicked, 2);
+  assert.deepEqual(none.order, [0, 1, 2, 3]);
+  // A beats B in week 4: A 3-1 alone on top; B 2-2, and that is one pick, one game left out.
+  const one = seedings(s, { [pickKey(4, 0)]: 0 });
+  assert.deepEqual([one.order[0], one.wins[0], one.losses[1], one.unpicked], [0, 3, 2, 1]);
+});
+
+test("simulate: a snapshot without h2h still works (falls back to points for)", () => {
+  const s = league([{ week: 11, matchups: [[0, 5], [1, 4], [2, 3]] }]);
+  assert.equal(s.h2h, undefined);
+  assert.equal(seedings(s).order.length, 6);
+});
+
+test("toSiteDigest: rankings sorted, previous rank looked up by team key", () => {
+  const d = toSiteDigest(
+    5,
+    {
+      headline: "H",
+      recap: "R",
+      power_rankings: [
+        { rank: 2, team: "Tebow’s Purity Ring", comment: "b" },
+        { rank: 1, team: "A", comment: "a" },
+        { rank: 3, team: "New", comment: "c" },
+      ],
+    },
+    [{ rank: 1, team: "Tebow's Purity Ring" }, { rank: 2, team: "A" }],
+  );
+  assert.deepEqual(d.power_rankings.map((p) => [p.rank, p.team, p.prev_rank]), [
+    [1, "A", 2],
+    [2, "Tebow’s Purity Ring", 1],
+    [3, "New", null],
+  ]);
+  assert.equal(toSiteDigest(1, { headline: "", recap: "", power_rankings: [] }, null).week, 1);
 });
 
 // --- publishSite: never throws -------------------------------------------------

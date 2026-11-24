@@ -11,10 +11,11 @@
  * It knows nothing about injuries, byes or rosters — it is "if everyone
  * keeps scoring like they have", not a projection.
  *
- * Qualification order: wins (a tie is half a win), then points for.
- * docs/league-rules.md only defines a head-to-head tiebreak for SEEDING and
- * says nothing about who gets in on a tied record; points-for is Yahoo's
- * default and is stated on the page.
+ * Standing order (rankTeams, the one comparator the odds, the bracket and
+ * derive.ts all use): wins (a tie is half a win), then head-to-head among the
+ * teams tied on record, then points for. Head-to-head is docs/league-rules.md's
+ * seeding tiebreak; Anu confirmed on 2026-11-23 that it comes first and points
+ * for is the fallback.
  */
 
 import type { SeasonSnapshot } from "./types.ts";
@@ -47,6 +48,95 @@ function prng(seed: number) {
 }
 
 export const pickKey = (week: number, matchup: number) => `${week}:${matchup}`;
+
+/**
+ * Sort team indexes into standing order, in place. `h2h` is a flat n×n
+ * matrix: h2h[a * n + b] = games a has won against b (a tie is half each).
+ *
+ * Teams level on record are split by their net head-to-head result in games
+ * among just those teams (wins minus losses, so a team that has not played
+ * the others sits at zero), then by points for. A tie of three or more is
+ * ranked in one pass — it is not re-broken after the first team is placed.
+ */
+export function rankTeams(
+  order: number[],
+  wins: ArrayLike<number>,
+  pf: ArrayLike<number>,
+  h2h: ArrayLike<number>,
+  n: number,
+): void {
+  order.sort((x, y) => wins[y] - wins[x] || pf[y] - pf[x] || x - y);
+  for (let s = 0; s < order.length; ) {
+    let e = s + 1;
+    while (e < order.length && wins[order[e]] === wins[order[s]]) e++;
+    if (e - s > 1) {
+      const group = order.slice(s, e);
+      const net = new Map<number, number>();
+      let any = false;
+      for (const i of group) {
+        let v = 0;
+        for (const j of group) if (j !== i) v += h2h[i * n + j] - h2h[j * n + i];
+        if (v !== 0) any = true;
+        net.set(i, v);
+      }
+      if (any) {
+        group.sort((x, y) => net.get(y)! - net.get(x)! || pf[y] - pf[x] || x - y);
+        for (let k = 0; k < group.length; k++) order[s + k] = group[k];
+      }
+    }
+    s = e;
+  }
+}
+
+/** The snapshot's head-to-head matrix, flattened; zeros when the snapshot has none. */
+function flatH2h(snapshot: SeasonSnapshot): Float64Array {
+  const n = snapshot.teams.length;
+  const flat = new Float64Array(n * n);
+  snapshot.h2h?.forEach((row, a) => row.forEach((v, b) => (flat[a * n + b] = v)));
+  return flat;
+}
+
+export interface Seeding {
+  /** Team indexes in seed order: order[0] is the top seed. */
+  order: number[];
+  /** Records with the picks applied, by team index. */
+  wins: number[];
+  losses: number[];
+  ties: number[];
+  /** Remaining games with no pick; they are left out, not guessed. */
+  unpicked: number;
+}
+
+/**
+ * The bracket's seeding: today's standings plus the picked results, nothing
+ * simulated. A picked game adds a win, a loss and a head-to-head result but
+ * no points, so points-for tiebreaks use the totals as they stand today.
+ */
+export function seedings(snapshot: SeasonSnapshot, picks: Picks = {}): Seeding {
+  const teams = snapshot.teams;
+  const n = teams.length;
+  const wins = teams.map((t) => t.wins);
+  const losses = teams.map((t) => t.losses);
+  const ties = teams.map((t) => t.ties);
+  const h2h = flatH2h(snapshot);
+  let unpicked = 0;
+  for (const wk of snapshot.remaining) {
+    wk.matchups.forEach(([a, b], m) => {
+      const w = picks[pickKey(wk.week, m)];
+      if (w !== a && w !== b) {
+        unpicked++;
+        return;
+      }
+      const l = w === a ? b : a;
+      wins[w]++;
+      losses[l]++;
+      h2h[w * n + l] += 1;
+    });
+  }
+  const order = teams.map((_, i) => i);
+  rankTeams(order, wins.map((w, i) => w + ties[i] / 2), teams.map((t) => t.points_for), h2h, n);
+  return { order, wins, losses, ties, unpicked };
+}
 
 export function simulate(
   snapshot: SeasonSnapshot,
@@ -92,12 +182,15 @@ export function simulate(
   const wins = new Array<number>(n);
   const pf = new Array<number>(n);
   const order = teams.map((_, i) => i);
+  const baseH2h = flatH2h(snapshot);
+  const h2h = new Float64Array(n * n);
 
   for (let r = 0; r < runs; r++) {
     for (let i = 0; i < n; i++) {
       wins[i] = baseWins[i];
       pf[i] = basePf[i];
     }
+    h2h.set(baseH2h);
     for (const g of games) {
       let sa = draw(g.a);
       let sb = draw(g.b);
@@ -110,14 +203,20 @@ export function simulate(
       }
       pf[g.a] += sa;
       pf[g.b] += sb;
-      if (sa > sb) wins[g.a] += 1;
-      else if (sb > sa) wins[g.b] += 1;
-      else {
+      if (sa > sb) {
+        wins[g.a] += 1;
+        h2h[g.a * n + g.b] += 1;
+      } else if (sb > sa) {
+        wins[g.b] += 1;
+        h2h[g.b * n + g.a] += 1;
+      } else {
         wins[g.a] += 0.5;
         wins[g.b] += 0.5;
+        h2h[g.a * n + g.b] += 0.5;
+        h2h[g.b * n + g.a] += 0.5;
       }
     }
-    order.sort((x, y) => wins[y] - wins[x] || pf[y] - pf[x] || x - y);
+    rankTeams(order, wins, pf, h2h, n);
     for (let pos = 0; pos < n; pos++) {
       const i = order[pos];
       if (pos < snapshot.config.playoff_teams) made[i]++;

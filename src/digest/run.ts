@@ -20,6 +20,7 @@ import { generateDigest } from "./generate.ts";
 import { loadPoll, savePoll, savePowerRankings, type PollTally } from "./history.ts";
 import { enqueueWhatsApp } from "./outbox.ts";
 import { renderDigest } from "./render.ts";
+import { toSiteDigest } from "../site/derive.ts";
 import { publishSite } from "../site/publish.ts";
 
 /**
@@ -151,7 +152,11 @@ export async function runDigest(opts: {
   // MUFF-71: refresh the league site's season snapshot. Like the archive it
   // runs on dry runs too and never throws — the site is a side output, and it
   // is whole-season, so it is the same snapshot whichever week this run was for.
-  const sitePublished = await publishSite();
+  // Only a delivering run hands over its digest: the site shows what the chat
+  // saw, and a dry run keeps whatever recap is already there.
+  const sitePublished = await publishSite(
+    opts.send ? toSiteDigest(facts.week, digest, facts.previous_power_rankings) : undefined,
+  );
   if (sitePublished) progress(`League site snapshot written: ${sitePublished}.`);
 
   let sentTo: number | null = null;
