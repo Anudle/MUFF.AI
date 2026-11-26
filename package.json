@@ -25,6 +25,7 @@
     "eval": "node --env-file-if-exists=.env --experimental-strip-types scripts/eval.ts",
     "rag:build": "node --env-file-if-exists=.env --experimental-strip-types scripts/rag-build.ts",
     "rag:search": "node --env-file-if-exists=.env --experimental-strip-types scripts/rag-search.ts",
+    "scout": "node --env-file=.env --experimental-strip-types scripts/scout.ts",
     "site:snapshot": "node --env-file-if-exists=.env --experimental-strip-types scripts/site-snapshot.ts",
     "site:bundle": "node --experimental-strip-types scripts/site-bundle.ts",
     "site:dev": "node --experimental-strip-types scripts/site-dev.ts",
