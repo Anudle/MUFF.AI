@@ -21,6 +21,7 @@ npm run digest         # Tuesday digest; -- --week N for a specific week, -- --s
 npm run eval           # score fixtures/golden set; -- --live also runs the real model
 npm run rag:build      # rebuild the league-history index (rag/{chunks,index}.json) from the run archive in the store
 npm run rag:search     # query it from the CLI: -- [--k N] "question"
+npm run scout          # private free-agent scout: rank available players vs my roster; -- --send DMs the admin chat, -- --week N, -- --open
 npm run site:snapshot  # build the league site's season snapshot (site/season.json) into the store
 npm run site:dev       # bundle web/ and preview the league site on :4173 from the local snapshot
 npm run site:bundle    # dist/site/ — the static files to upload (never season.json)
@@ -60,6 +61,8 @@ Three consumers sit on one provider-blind data layer:
 
 - **League site** — `src/site/` + `web/` (MUFF-71): a static page (the delivered digest's recap and power rankings, playoff odds with a what-if picker, the playoff bracket those picks produce, luck index, remaining-schedule difficulty) fed by one snapshot, `site/season.json`, which the digest run rewrites non-fatally (`publishSite`; only a delivering run hands it the digest, anything else carries the stored one forward). Standing order everywhere is `rankTeams` in `sim.ts`: record, then points for (Yahoo's standings order). `season.ts` fetches through the provider seam (including `getSchedule`, the one provider function that reads future weeks and is not an MCP tool), `derive.ts` computes, and `sim.ts` is the only arithmetic that runs in the browser — it must stay import-free because it is bundled into `web/app.ts` and unit-tested as the same module. League format constants live in `src/site/config.ts` and mirror `docs/league-rules.md`. Hosting (CloudFront over the private bucket, origin path `/site`) is IaC and is Anu's — `docs/league-site.md`.
 
+- **Free-agent scout** — `src/scout/` (MUFF-72): a private, owner-only tool. `getFreeAgents` (exported from the provider seam but, like `getSchedule`, **not** an MCP tool; Yahoo only, the other providers refuse) returns the available-player pool next to my roster; `derive.ts` is pure arithmetic (gain against my weakest player per position, alert thresholds), `render.ts` does the Telegram text and a self-contained HTML board, `run.ts` dedupes per week via `scout/<season>-wNN.json`. It may write only to that store key, the local `data/scout/board.html`, and `TELEGRAM_ADMIN_CHAT_ID` — never under `site/`, never the league chat. No model call. `docs/scout-design.md`; the scheduled Lambda is not built and its deploy script is Anu's.
+
 Cross-cutting invariants:
 
 - **Errors are data.** Tool handlers never throw. Every response is `{status:"ok", data}` or `{status:"error", code, message}`, and error messages tell the agent what to *do* (retry, don't retry, run `npm run auth`). Codes are enumerated in `docs/mcp-tools.md`.
@@ -71,7 +74,7 @@ Cross-cutting invariants:
 
 ## Docs are the source of truth for design intent
 
-Each subsystem has a design doc recording decisions and their reasoning: `docs/mcp-tools.md`, `docs/agent-design.md`, `docs/digest-design.md`, `docs/deploy.md`, `docs/observability.md`, `docs/whatsapp-sender.md`, `docs/league-site.md`, `docs/sleeper-spike.md`, `docs/ingestion-checklist.md`, `docs/adr/`. When a change alters a documented decision, update the doc in the same change.
+Each subsystem has a design doc recording decisions and their reasoning: `docs/mcp-tools.md`, `docs/agent-design.md`, `docs/digest-design.md`, `docs/deploy.md`, `docs/observability.md`, `docs/whatsapp-sender.md`, `docs/league-site.md`, `docs/scout-design.md`, `docs/sleeper-spike.md`, `docs/ingestion-checklist.md`, `docs/adr/`. When a change alters a documented decision, update the doc in the same change.
 
 ## Current plan
 The monthly plan lives at `~/Downloads/Fantasy Football & Projects/PLAN-2026-10.md` — read it at the start of every session.

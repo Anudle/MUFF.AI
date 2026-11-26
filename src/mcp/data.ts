@@ -50,3 +50,10 @@ export const getTransactions = provider.getTransactions;
 export const getWeekResults = provider.getWeekResults;
 /** MUFF-71: remaining-schedule lookup for the league site. Not an MCP tool. */
 export const getSchedule = provider.getSchedule;
+/**
+ * MUFF-72: the available-player pool next to my roster, for the private
+ * free-agent scout. Not an MCP tool — it is the owner's edge, not league
+ * information, and the league-facing agent must not hand it out. Yahoo only;
+ * the other providers refuse.
+ */
+export const getFreeAgents = provider.getFreeAgents;

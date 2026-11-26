@@ -160,6 +160,102 @@ export async function getRoster(week?: number) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// MUFF-72 — free-agent scout. Not an MCP tool: it compares the pool against
+// "my" roster, which is private to the owner, not league information.
+// ---------------------------------------------------------------------------
+
+/** Positions the league starts (docs/league-rules.md); one Yahoo call each. */
+const SCOUT_POSITIONS = ["QB", "WR", "RB", "TE", "K", "DEF"] as const;
+/** Yahoo caps a players page at 25. */
+const SCOUT_PAGE = 25;
+
+function scoutRow(p: Record<string, Json>) {
+  return {
+    player_key: String(p.player_key),
+    name: (p.name?.full ?? null) as string | null,
+    position: (p.display_position ?? null) as string | null,
+    nfl_team: (p.editorial_team_abbr ?? null) as string | null,
+    status: (p.status_full ?? p.status ?? null) as string | null,
+    bye_week: num(p.bye_weeks?.week),
+    points: num(p.player_points?.total),
+  };
+}
+
+/** Season-to-date league points by player key, 25 keys per call. */
+async function fetchSeasonPoints(leagueKey: string, keys: string[]) {
+  const out = new Map<string, number | null>();
+  for (let i = 0; i < keys.length; i += SCOUT_PAGE) {
+    const chunk = keys.slice(i, i + SCOUT_PAGE);
+    const data = (await yahooFetch(
+      `league/${leagueKey}/players;player_keys=${chunk.join(",")}/stats;type=season`,
+    )) as Json;
+    const league = mergeFragments(data.fantasy_content.league);
+    for (const p of items(league.players, "player")) {
+      out.set(String(p.player_key), num(p.player_points?.total));
+    }
+  }
+  return out;
+}
+
+/**
+ * The available-player pool for one week next to my own roster, both with
+ * that week's points and season-to-date points. Availability is always "as of
+ * now" — Yahoo has no historical free-agent list — so a past week shows what
+ * today's free agents scored then.
+ *
+ * Calls run one at a time: yahooFetch has no backoff, and nothing here is
+ * latency-sensitive.
+ */
+export async function getFreeAgents(week?: number) {
+  const league = await resolveLeague();
+  const w = resolveWeek(league, week);
+
+  const pool: ReturnType<typeof scoutRow>[] = [];
+  for (const position of SCOUT_POSITIONS) {
+    const data = (await yahooFetch(
+      `league/${league.league_key}/players;status=A;position=${position}` +
+        `;sort=PTS;sort_type=week;sort_week=${w};count=${SCOUT_PAGE}` +
+        `/stats;type=week;week=${w}`,
+    )) as Json;
+    const node = mergeFragments(data.fantasy_content.league);
+    for (const p of items(node.players, "player")) {
+      const row = scoutRow(p);
+      // A dual-position player shows up under each position; keep one row.
+      if (!pool.some((r) => r.player_key === row.player_key)) pool.push(row);
+    }
+  }
+
+  const rosterData = (await yahooFetch(
+    `team/${league.my_team_key}/roster;week=${w}/players/stats;type=week;week=${w}`,
+  )) as Json;
+  const team = mergeFragments(rosterData.fantasy_content.team);
+  const mine = items(team.roster?.["0"]?.players, "player").map((p) => ({
+    ...scoutRow(p),
+    slot: (mergeFragments(p.selected_position).position ?? null) as string | null,
+  }));
+
+  const season = await fetchSeasonPoints(
+    league.league_key,
+    [...pool, ...mine].map((r) => r.player_key),
+  );
+  const withSeason = <T extends { player_key: string }>(r: T) => ({
+    ...r,
+    season_points: season.get(r.player_key) ?? null,
+  });
+
+  return {
+    league: league.league_name,
+    season: league.season,
+    week: w,
+    /** True while the week can still change (it is the league's current week). */
+    live: w === league.current_week && !league.is_finished,
+    team: league.my_team_name,
+    roster: mine.map(withSeason),
+    free_agents: pool.map(withSeason),
+  };
+}
+
 /**
  * Every team's roster for one week (MUFF-38 digest: bench points, start/sit).
  * One Yahoo call per team, batched 4 at a time to stay clear of rate limits.

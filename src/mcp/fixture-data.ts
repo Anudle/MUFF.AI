@@ -145,6 +145,14 @@ export async function getMatchup(_week?: number) {
   return unavailable("get_matchup");
 }
 
+/** MUFF-72 — the scout needs a live available-player pool; fixtures have none. */
+export async function getFreeAgents(_week?: number): Promise<never> {
+  throw new Error(
+    "The free-agent scout is not available in fixture mode (FANTASY_PROVIDER=fixture): weekly " +
+      "fixtures hold no available-player pool and no \"my team\". Do not retry.",
+  );
+}
+
 export async function getLeagueRosters(week?: number) {
   const f = await loadFixture(await weekOrLatest(week));
   return toWeekInputs(f).rosters;

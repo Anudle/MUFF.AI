@@ -350,6 +350,19 @@ export async function getWeekResults(week?: number) {
   };
 }
 
+/**
+ * MUFF-72 — the free-agent scout is Yahoo-only for now. Sleeper could build
+ * the pool by diffing the synced player map against league rosters, but it
+ * has no per-player weekly points for unrostered players without a stats
+ * feed this repo does not read.
+ */
+export async function getFreeAgents(_week?: number): Promise<never> {
+  throw new Error(
+    "The free-agent scout is not available with FANTASY_PROVIDER=sleeper: only the Yahoo provider " +
+      "reads the available-player pool. Do not retry.",
+  );
+}
+
 /** MUFF-71 — pairings for weeks fromWeek..toWeek, future weeks included (see yahoo-data.ts). */
 export async function getSchedule(fromWeek: number, toWeek: number) {
   const league = await resolveLeague();
